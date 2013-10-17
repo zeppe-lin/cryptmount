@@ -19,11 +19,12 @@ $(BIN): $(BIN).sh
 man: $(MANPAGES)
 
 %.5: %.5.txt
-	a2x -d manpage -f manpage $<
+	echo a2x -d manpage -f manpage $<
+	touch $@
 
 %.8: %.8.txt
-	a2x -d manpage -f manpage $<
-
+	echo a2x -d manpage -f manpage $<
+	touch $@
 
 install: install_bin install_doc
 
@@ -40,6 +41,6 @@ $(DESTDIR)$(BINDIR) $(DOCDIRS):
 
 
 clean:
-	$(RM) $(BIN) $(MANPAGES)
+	$(RM) $(BIN)
 
 .PHONY: all man clean install install_bin install_doc
