@@ -8,7 +8,6 @@ DATADIR  ?= $(PREFIX)/share
 MANDIR   ?= $(DATADIR)/man
 
 DOCDIRS  := $(addprefix $(DESTDIR)$(MANDIR)/man, 5 8) $(DESTDIR)$(DATADIR)/$(BIN)
-HOOKDIRS := $(addprefix $(DESTDIR)$(LIBDIR)/initcpio/, install hooks)
 
 
 all: $(BIN) $(MANPAGES)
@@ -36,15 +35,11 @@ install_doc: $(MANPAGES) crypttab.example $(DOCDIRS)
 	install -m644 -t $(DESTDIR)$(MANDIR)/man8 $(filter %.8, $(MANPAGES))
 	install -m644 -t $(DESTDIR)$(DATADIR)/$(BIN) crypttab.example
 
-install_hook: archlinux/encrypt_hook archlinux/encrypt_install $(HOOKDIRS)
-	install -m644 archlinux/encrypt_install $(DESTDIR)$(LIBDIR)/initcpio/install/encrypt2
-	install -m644 archlinux/encrypt_hook    $(DESTDIR)$(LIBDIR)/initcpio/hooks/encrypt2
-
-$(DESTDIR)$(BINDIR) $(HOOKDIRS) $(DOCDIRS):
+$(DESTDIR)$(BINDIR) $(DOCDIRS):
 	install -m755 -d $@
 
 
 clean:
 	$(RM) $(BIN) $(MANPAGES)
 
-.PHONY: all man clean install install_bin install_doc install_hook
+.PHONY: all man clean install install_bin install_doc
