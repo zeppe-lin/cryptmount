@@ -135,7 +135,7 @@ ct_main() {
 			U) set_action unmap;;
 			c) CRYPTTAB="$OPTARG";;
 			f) FORCE=1;;
-			w) WAITTIME=${OPTARG//[!0-9]};;
+			w) WAITTIME=$(printf '%s\n', "$OPTARG" | sed 's/[^0-9]//g');;
 			n) DRYRUN=1;;
 			q) LOGLEVEL=$(( LOGLEVEL - 1 ));;
 			v) LOGLEVEL=$(( LOGLEVEL + 1 ));;
