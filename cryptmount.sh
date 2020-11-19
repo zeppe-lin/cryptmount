@@ -89,7 +89,8 @@ run() {
 }
 
 trim() {
-	local IFS=$' \t\n'
+	local IFS
+	IFS="$(printf ' \n\t')"
 	echo -n $*
 }
 
@@ -351,7 +352,8 @@ ct_read_crypttab() {
 
 ct_check_filter() {
 
-	local IFS=$',' fltr opt
+	local IFS fltr opt
+	IFS="$(printf ',')"
 
 	for fltr in $FILTER; do
 		fltr="$(trim $fltr)"
