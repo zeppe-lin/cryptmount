@@ -103,6 +103,11 @@ get_mount() {
 	fi
 }
 
+substring(){
+	printf "%s\n" "$1" | awk -v start="$2" -v count="$3" \
+		'{print(substr($0,start+1,count));}'
+}
+
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
 #                                                                              #
 # Main functions                                                               #
@@ -290,7 +295,7 @@ ct_read_crypttab() {
 	while read -r name dev key options <&3; do
 
 		lineno=$(( lineno + 1 ))
-		[ -z "$name" ] || [ ${name:0:1} = "#" ] && continue
+		[ -z "$name" ] || [ "$(substring "$name" 0 1)" = "#" ] && continue
 
 		# unescape devname and keyname
 		name=$(printf '%b' "$name")
@@ -352,7 +357,7 @@ ct_check_filter() {
 		fltr="$(trim $fltr)"
 		[ -z "$fltr" ] && continue
 
-		if [ "x${fltr:0:1}" != "x!" ]; then
+		if [ x"$(substring "$fltr" 0 1)" != "x!" ]; then
 
 			for opt in $*; do
 				opt="$(trim $opt)"
@@ -582,7 +587,7 @@ ct_resolve_device() {
 			fi
 	esac
 
-	if [ ! -e "$device" -a "${device:0:5}" = "/dev/" -a "$UDEVRUNNING" -eq 1 ]; then
+	if [ ! -e "$device" -a "$(substring "$device" 0 5)" = "/dev/" -a "$UDEVRUNNING" -eq 1 ]; then
 		msg "Waiting $seconds seconds for '$device'..."
 		until [ -e "$device" -o $seconds -eq 0 ]; do
 			sleep 1
