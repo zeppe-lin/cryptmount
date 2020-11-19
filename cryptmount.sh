@@ -50,7 +50,7 @@ usage: $0 [OPTIONS] [-L]
              be present. specifying this multiple times is cumulative
 
 __EOF__
-	exit $1
+	exit "$1"
 }
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
@@ -64,7 +64,7 @@ error() {
 
 die() {
 	printf "E: %s\n" "$*" >&2
-	exit ${1:-1}
+	exit "${1:-1}"
 }
 
 warn() {
