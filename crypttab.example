@@ -1,7 +1,9 @@
-# crypttab: mappings for encrypted volumes
 #
-# see crypttab(5) for the full details
+# /etc/crypttab: mappings for encrypted volumes
 #
+# See crypttab(5) for more information.
+#
+
 # NAME    - name of volume, /dev/mapper/NAME
 # DEVICE  - absolute path, UUID, PARTUUID, or LABEL of device or file
 # KEY     - -|<file>|<device>[[:fstype]:<file>]
@@ -15,3 +17,5 @@
 #swap      /dev/sdb2           /dev/urandom        swap,cipher=aes-cbc-essiv:sha256,size=128
 #data      UUID=82d4f2...      -                   noauto
 #backup    /home/backup        LABEL=usbdrv2       noauto,keyfile-offset=500,keyfile-size=1024
+
+# End of file.
