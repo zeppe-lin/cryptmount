@@ -1,0 +1,133 @@
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+cryptmount - parse F<crypttab> for use by B<cryptsetup>
+
+=head1 SYNOPSIS
+
+B<cryptmount> [I<options>] [B<-L>]
+
+B<cryptmount> [I<options>] B<-M> [I<name>|I<device>]
+
+B<cryptmount> [I<options>] B<-M> I<name> I<device> [I<key>]
+
+B<cryptmount> [I<options>] B<-U> [I<name>[,...]]
+
+=head1 DESCRIPTION
+
+B<cryptmount> uses L<crypttab(5)> for calling L<cryptsetup(8)>; it
+can also be used to define a I<volume> on the command line without
+B<crypttab>.
+
+=head1 ACTIONS
+
+=over 8
+
+=item B<-L>
+
+List the I<names> (first column) of I<volumes> from B<crypttab>.  Use
+with B<-O> to manipulate which I<names> are listed.
+
+=item B<-M>
+
+Perform a mapping.  The first form of this command finds a I<volume>
+from B<crypttab> either by its I<name> or I<device>, or if nothing is
+given then map all I<volumes> (use with B<-O> to manipulate which
+I<volumes> are mapped).  The second form defines a I<volume> entirely
+on the command line, B<crypttab> is not used.
+
+=item B<-U>
+
+Unmap I<volume(s)>.  If a list of I<names> is given, unmap them.
+Otherwise unmap all I<volumes> from B<crypttab> (with B<-O> to
+manipulate which I<volumes> are unmapped).
+
+=back
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-c> I<file>
+
+Override the default B<crypttab> location.
+
+=item B<-f>
+
+Force potentially destructive mappings.  For plain mappings (which
+are used with the B<swap> and B<tmp> options), there is a lot of
+potential to accidentally lose data.  Because of this, B<cryptmount>
+performs a check with L<blkid(8)> to see if there is anything
+identifiable on I<device>.  Use B<-f> to bypass this check.
+
+=item B<-w> I<num>
+
+Time (in seconds) to wait for I<device> if it is not already
+available.  If L<udevd(8)> is not running, then B<cryptmount> does not
+bother to wait and this option is a no-op.  This also affects the
+wait time for I<keydevice> if your key is a block device or a file on
+a block device.
+
+=item B<-n>
+
+Dry run, useful with B<-v> to see how B<cryptsetup> will be called.
+
+=item B<-v>
+
+Increase verbosity.  This prints the commands which are being called
+(eg: B<cryptsetup>, B<mkswap>).
+
+=item B<-q>
+
+Decrease verbosity.
+
+=item B<-h>
+
+Print a short usage message and exit.
+
+=item B<-o> I<options>
+
+An options list with items such as B<swap>, B<cipher>, etc.  This may
+be given multiple times with a cumulative effect.  See L<crypttab(5)>
+for the full syntax I<options>.
+
+=item B<-O> I<filters>
+
+Similar to I<options>, this is used to manipulate which I<volumes> are
+used with I<-L> and with I<-M/-U> without arguments.  If an option is
+present in I<filters>, then the I<volume> in B<crypttab> must contain
+the option.  For example B<-O swap,size> matches all I<volumes> with
+the B<swap> option and any B<size>=size option; or B<-O
+swap,size=512> matches only those I<volumes> with the B<swap> option
+and specifically B<size=512>.
+
+A filter option may also be negated by prefixing it with a B<!>. For
+example, B<-O swap,!size> includes all I<volumes> with the B<swap>
+option but B<without> the I<size> option.  There is a built-in filter
+B<!noauto>.
+
+Filters are especially useful with B<%>tag options. For example, B<-O
+!%random> can be used to map all I<volumes> which don’t use
+B</dev/urandom> for a password and B<-O %random> to map the remainder
+once your system’s random seed has been restored.
+
+The B<-O> option has B<no effect> when calling B<cryptmount> in a way
+that does not use B<crypttab>.
+
+=back
+
+=head1 SEE ALSO
+
+L<crypttab(5)>, L<cryptsetup(8)>
+
+=head1 AUTHORS
+
+Matt Monaco <dgbaley27@0x01b.net>
+
+=cut
+
+# vim:sw=2:ts=2:sts=2:et:cc=72:tw=70
+# End of file.
