@@ -1,0 +1,11 @@
+TODO cryptmount
+
+	[ ] Fix Makefile.
+	[ ] Adjust the sources for Zeppe-Lin standards.
+
+	And only then...
+
+	[ ] Prepare a Pkgfile.
+	[ ] Integrate cryptmount into the initscripts (rc package).
+
+End of file.
