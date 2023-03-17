@@ -9,8 +9,9 @@ TODO cryptmount
 
 	And only then...
 
-	[ ] Prepare a Pkgfile.
-	[ ] Integrate cryptmount into the initscripts (rc package).
+	[X] Prepare a Pkgfile.
+	[X] Integrate cryptmount into the initscripts (rc package).
+	Done: Fri Mar 17 01:57:01 PM EET 2023
 
 	---
 
