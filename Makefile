@@ -9,7 +9,8 @@ all: cryptmount cryptmount.8 crypttab.5
 		-s $(subst .,,$(suffix $@)) $< > $@
 
 %: %.in
-	sed "s/@VERSION@/${VERSION}/g" $< > $@
+	sed -e "s/@CRYPTSETUP_BIN@/${CRYPTSETUP_BIN}/g" \
+	    -e "s/@VERSION@/${VERSION}/g" $< > $@
 
 install: all
 	mkdir -p           ${DESTDIR}${PREFIX}/sbin
