@@ -1,6 +1,8 @@
 TODO cryptmount
 
-	[ ] Fix Makefile.
+	[X] Fix Makefile.
+	Done: Fri Mar 17 12:41:25 PM EET 2023
+
 	[ ] Adjust the sources for Zeppe-Lin standards.
 
 	And only then...
