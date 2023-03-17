@@ -37,7 +37,8 @@ REQUIREMENTS
 
 INSTALL
 
-	TODO...
+	The shell commands "make && make install" should build and install
+	this package.
 
 LICENSE
 
