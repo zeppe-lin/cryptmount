@@ -8,4 +8,8 @@ TODO cryptmount
 	[ ] Prepare a Pkgfile.
 	[ ] Integrate cryptmount into the initscripts (rc package).
 
+	---
+
+	[ ] Add '-v' for version.
+
 End of file.
