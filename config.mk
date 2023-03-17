@@ -1,6 +1,6 @@
 # project metadata
 NAME = cryptmount
-VERSION = 0.1
+VERSION = 0.1.1
 
 # cryptsetup(8) default binary
 CRYPTSETUP_BIN = cryptsetup
