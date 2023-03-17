@@ -1,7 +1,7 @@
 #!/bin/sh
 
 SHORTOPTS="LMUc:fw:nqvho:O:"
-DEPS="cryptsetup blkid mkswap mktemp"
+DEPS="cryptsetup blkid mkswap"
 UDEVRUNNING=0
 
 LOGLEVEL=1
@@ -107,6 +107,26 @@ get_mount() {
 substring(){
 	printf "%s\n" "$1" | awk -v start="$2" -v count="$3" \
 		'{print(substr($0,start+1,count));}'
+}
+
+mkdtemp() {
+  # initial entropy, the more we can get the better
+  local random=$(( $(date +%S%M%H%j) + $$ ))
+  local tmpdir
+
+  while
+    # C standard rand(), without truncation
+    # cf. https://en.wikipedia.org/wiki/Linear_congruential_generator
+    random=$(( (1103515245*random + 12345) % 2147483648 ))
+
+    # optionally, shorten name a bit
+    tmpdir=$( printf "/tmp/tmp.%x" $random )
+
+    # loop until new directory is created
+    ! mkdir $tmpdir 2>&-
+  do : ; done
+
+  printf %s "$tmpdir"
 }
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
@@ -473,7 +493,7 @@ ct_map() {
 
 				key="$key_mntpnt/$key"
 
-			elif key_mntpnt="$(mktemp -d)"; then
+			elif key_mntpnt="$(mkdtemp)"; then
 
 				[ -n "$key_fstype" ] && key_fstype="-t $key_fstype"
 
