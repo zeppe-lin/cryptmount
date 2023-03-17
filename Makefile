@@ -1,46 +1,33 @@
-BIN      ?= cryptmount
-MANPAGES := crypttab.5 cryptmount.8
+.POSIX:
 
-PREFIX   ?= /usr/local
-BINDIR   ?= $(PREFIX)/bin
-LIBDIR   ?= $(PREFIX)/lib
-DATADIR  ?= $(PREFIX)/share
-MANDIR   ?= $(DATADIR)/man
+include config.mk
 
-DOCDIRS  := $(addprefix $(DESTDIR)$(MANDIR)/man, 5 8) $(DESTDIR)$(DATADIR)/$(BIN)
+all: cryptmount cryptmount.8 crypttab.5
 
+%: %.pod
+	pod2man -r "${NAME} ${VERSION}" -c ' ' -n $(basename $@) \
+		-s $(subst .,,$(suffix $@)) $< > $@
 
-all: $(BIN) $(MANPAGES)
+%: %.in
+	sed "s/@VERSION@/${VERSION}/g" $< > $@
 
+install: all
+	mkdir -p           ${DESTDIR}${PREFIX}/sbin
+	mkdir -p           ${DESTDIR}${MANPREFIX}/man8
+	mkdir -p           ${DESTDIR}${MANPREFIX}/man5
+	cp -f cryptmount   ${DESTDIR}${PREFIX}/sbin/
+	cp -f cryptmount.8 ${DESTDIR}${MANPREFIX}/man8/
+	cp -f crypttab.5   ${DESTDIR}${MANPREFIX}/man5/
+	chmod 0755         ${DESTDIR}${PREFIX}/sbin/cryptmount
+	chmod 0644         ${DESTDIR}${MANPREFIX}/man8/cryptmount.8
+	chmod 0644         ${DESTDIR}${MANPREFIX}/man5/crypttab.5
 
-$(BIN): $(BIN).sh
-	cp $< $@
-
-man: $(MANPAGES)
-
-%.5: %.5.txt
-	echo a2x -d manpage -f manpage $<
-	touch $@
-
-%.8: %.8.txt
-	echo a2x -d manpage -f manpage $<
-	touch $@
-
-install: install_bin install_doc
-
-install_bin: $(BIN) $(DESTDIR)$(BINDIR)
-	install -m755 -t $(DESTDIR)$(BINDIR) $(BIN)
-
-install_doc: $(MANPAGES) crypttab.example $(DOCDIRS)
-	install -m644 -t $(DESTDIR)$(MANDIR)/man5 $(filter %.5, $(MANPAGES))
-	install -m644 -t $(DESTDIR)$(MANDIR)/man8 $(filter %.8, $(MANPAGES))
-	install -m644 -t $(DESTDIR)$(DATADIR)/$(BIN) crypttab.example
-
-$(DESTDIR)$(BINDIR) $(DOCDIRS):
-	install -m755 -d $@
-
+uninstall:
+	rm -f ${DESTDIR}${PREFIX}/sbin/cryptmount
+	rm -f ${DESTDIR}${MANPREFIX}/man8/cryptmount.8
+	rm -f ${DESTDIR}${MANPREFIX}/man5/crypttab.5
 
 clean:
-	$(RM) $(BIN)
+	rm -f cryptmount cryptmount.8 crypttab.5
 
-.PHONY: all man clean install install_bin install_doc
+.PHONY: all install uninstall clean
