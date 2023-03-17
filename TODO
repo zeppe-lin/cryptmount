@@ -3,7 +3,8 @@ TODO cryptmount
 	[X] Fix Makefile.
 	Done: Fri Mar 17 12:41:25 PM EET 2023
 
-	[ ] !!! mktemp is in /usr/bin by default.  This breaks separate /usr boot.
+	[X] !!! mktemp is in /usr/bin by default.  This breaks separate /usr boot.
+	Done: Fri Mar 17 02:40:39 PM EET 2023
 
 	[ ] Adjust the sources for Zeppe-Lin standards.
 
