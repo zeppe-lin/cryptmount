@@ -13,6 +13,8 @@ OVERVIEW
 		  history of Matthew's initial Arch Linux package)
 		* the man pages have been rewritten in POD format and adjusted
 		  for Zeppe-Lin
+		* added CRYPTSETUP_BIN make variable to specify custom
+		  cryptsetup(8) location (/sbin/cryptsetup.static for example)
 
 	See git log for complete/further differences.
 
