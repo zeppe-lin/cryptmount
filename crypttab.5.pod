@@ -45,7 +45,7 @@ For compatibility with other formats, B<ASK> and B<none> may be used in
 place of B<-> and B<SWAP> is an idiom for B</dev/urandom> and the
 B<swap> option.  See L<OPTIONS>.
 
-B<Note:> A literal password in this field is B<not> supported.
+B<NOTE!> A literal password in this field is B<not> supported.
 
 =head2 B<The fourth field> (I<options>)
 
