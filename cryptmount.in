@@ -708,4 +708,5 @@ ct_parse_options() {
 
 ct_main "$@"
 
-# vim: set ft=sh noet ts=2 sw=2 :
+# vim: ft=sh
+# End of file.
