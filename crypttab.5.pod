@@ -19,20 +19,18 @@ Each C<volume> is described on a separate line by four fields.  Fields
 are separated by whitespace.  Empty lines and lines beginning with a
 C<#> are ignored.
 
-=over 8
-
-=item B<The first field> (I<name>).
+=head2 B<The first field> (I<name>).
 
 This field describes the name of the C<volume> which will appear at
 B</dev/mapper/>I<name>.  This must be a plain filename without any
 directory components.
 
-=item B<The second field> (I<device>).
+=head2 B<The second field> (I<device>).
 
 The field describes an absolute path, UUID, PARTUUID, or LABEL to a
 device or file which will be mapped to B</dev/mapper/>I<name>.
 
-=item B<The third field> (I<key>).
+=head2 B<The third field> (I<key>).
 
   key := - | keydevice[[:fstype] :keyfile]
 
@@ -49,7 +47,7 @@ B<swap> option.  See L<OPTIONS>.
 
 B<Note:> A literal password in this field is B<not> supported.
 
-=item B<The fourth field> (I<options>)
+=head2 B<The fourth field> (I<options>)
 
   options := key[=value] | %tag | options,options
 
@@ -59,8 +57,6 @@ detail below.
 For compatibility with other formats, if the first character is B<->
 then the entire field is interpretted as a literal command line for
 L<cryptsetup(8)>.
-
-=back
 
 =head1 OPTIONS
 
