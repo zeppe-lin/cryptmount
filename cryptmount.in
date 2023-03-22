@@ -113,23 +113,23 @@ substring(){
 # Make temporary directory.  Use it instead of "/usr/bin/mktemp -d", since
 # cryptmount is used in /etc/rc and must not require /usr/* utilities.
 mkdtemp() {
-  # initial entropy, the more we can get the better
-  local random=$(( $(date +%S%M%H%j) + $$ ))
-  local tmpdir
+	# initial entropy, the more we can get the better
+	local random=$(( $(date +%S%M%H%j) + $$ ))
+	local tmpdir
 
-  while
-    # C standard rand(), without truncation
-    # cf. https://en.wikipedia.org/wiki/Linear_congruential_generator
-    random=$(( (1103515245*random + 12345) % 2147483648 ))
+	while
+		# C standard rand(), without truncation
+		# cf. https://en.wikipedia.org/wiki/Linear_congruential_generator
+		random=$(( (1103515245*random + 12345) % 2147483648 ))
 
-    # optionally, shorten name a bit
-    tmpdir=$( printf "/tmp/tmp.%x" $random )
+		# optionally, shorten name a bit
+		tmpdir=$( printf "/tmp/tmp.%x" $random )
 
-    # loop until new directory is created
-    ! mkdir $tmpdir 2>&-
-  do : ; done
+		# loop until new directory is created
+		! mkdir $tmpdir 2>&-
+	do : ; done
 
-  printf %s "$tmpdir"
+	printf %s "$tmpdir"
 }
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
