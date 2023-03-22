@@ -19,10 +19,6 @@ Each C<volume> is described on a separate line by four fields.  Fields
 are separated by whitespace.  Empty lines and lines beginning with a
 C<#> are ignored.
 
-The fields are
-
-  name device [key [options]]
-
 =over 8
 
 =item B<The first field> (I<name>).
