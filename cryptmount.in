@@ -1,5 +1,7 @@
 #!/bin/sh
 
+readonly PROGRAM=${0##*/}
+
 SHORTOPTS="LMUc:fw:nqvho:O:"
 DEPS="cryptsetup blkid mkswap"
 UDEVRUNNING=0
@@ -17,10 +19,10 @@ ct_print_usage() {
 List, map, and unmap encrypted volumes. The utility is a wrapper for
 cryptsetup which makes use of a crypttab file.
 
-Usage: $0 [OPTIONS] [-L]
-       $0 [OPTIONS] -M [NAME|DEVICE]
-       $0 [OPTIONS] -M NAME DEVICE [KEY]
-       $0 [OPTIONS] -U [NAME[,...]]
+Usage: $PROGRAM [OPTIONS] [-L]
+       $PROGRAM [OPTIONS] -M [NAME|DEVICE]
+       $PROGRAM [OPTIONS] -M NAME DEVICE [KEY]
+       $PROGRAM [OPTIONS] -U [NAME[,...]]
 
 Actions:
   -L      list the names of volumes defined in crypttab, this is
