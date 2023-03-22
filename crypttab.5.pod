@@ -12,11 +12,12 @@ crypttab - static information about dm-crypt filesystems
 
 =head1 DESCRIPTION
 
-The file F<crypttab> contains information about encrypted volumes.
-F<crypttab> is intended to be read by L<cryptmount(8)>, and only
-written to by human administrators.  Each C<volume> is described on a
-separate line by four fields.  Fields are separated by whitespace.
-Empty lines and lines beginning with a C<#> are ignored.
+The file F<crypttab> contains descriptive information about the
+encrypted volumes the system can mount.  F<crypttab> is intended to be
+read by L<cryptmount(8)>, and only written to by human administrators.
+Each C<volume> is described on a separate line by four fields.  Fields
+are separated by whitespace.  Empty lines and lines beginning with a
+C<#> are ignored.
 
 The fields are
 
