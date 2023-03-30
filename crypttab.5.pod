@@ -55,7 +55,7 @@ The I<options> field is a comma separated list.  It is described in
 detail below.
 
 For compatibility with other formats, if the first character is B<->
-then the entire field is interpretted as a literal command line for
+then the entire field is interpreted as a literal command line for
 L<cryptsetup(8)>.
 
 =head1 OPTIONS
