@@ -58,8 +58,6 @@ For compatibility with other formats, if the first character is B<->
 then the entire field is interpreted as a literal command line for
 L<cryptsetup(8)>.
 
-=head1 OPTIONS
-
 Most options have a one-to-one correspondence to L<cryptsetup(8)> command
 line options and are simply reformatted.  For example to use
 B<cryptsetup --cipher/-c> C<cipher> the options B<cipher>=C<cipher> or
