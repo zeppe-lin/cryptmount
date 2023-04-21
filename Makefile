@@ -30,5 +30,9 @@ uninstall:
 
 clean:
 	rm -f cryptmount cryptmount.8 crypttab.5
+	rm -f ${DIST}.tar.gz
 
-.PHONY: all install uninstall clean
+dist: clean
+	git archive --format=tar.gz -o ${DIST}.tar.gz --prefix=${DIST}/ HEAD
+
+.PHONY: all install uninstall clean dist
