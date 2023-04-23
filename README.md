@@ -13,7 +13,7 @@ This distribution have the following little differences:
   initial Arch Linux package)
 - the man pages have been rewritten in POD format and adjusted for Zeppe-Lin
 - added `CRYPTSETUP_BIN` make variable to specify custom cryptsetup(8) location
-  (/sbin/cryptsetup.static for example)
+  (`/sbin/cryptsetup.static` for example)
 
 See git log for complete/further differences.
 
@@ -25,12 +25,10 @@ The original sources can be downloaded from:
 REQUIREMENTS
 ------------
 **Build time**:
-
 - POSIX sh(1p), make(1p) and "mandatory utilities"
 - pod2man(1pm) to build man pages
 
 **Runtime**:
-
 - POSIX sh(1p) and "mandatory utilities"
 - cryptsetup(8)
 - blkid(8)
