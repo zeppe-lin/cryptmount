@@ -1,19 +1,19 @@
 OVERVIEW
 --------
-This directory contains cryptmount, a tiny utility that is a wrapper for
-cryptsetup which makes use of a crypttab file.
+This directory contains cryptmount, a tiny utility that is a wrapper
+for cryptsetup which makes use of a crypttab file.
 
-This distribution is a fork of Sabotage-Linux' cryptmount as of commit 8b7af97
-(Thu Nov 19, 2020).  The Sabotage-Linux' version of cryptmount is a patched
-version of Matthew's Monaco cryptmount.
+This distribution is a fork of Sabotage-Linux' cryptmount as of commit
+8b7af97 (Thu Nov 19, 2020).  The Sabotage-Linux' version of cryptmount
+is a patched version of Matthew's Monaco cryptmount.
 
 This distribution have the following little differences:
-
-- add the LICENSE file (the license was obtained from git history of Matthew's
-  initial Arch Linux package)
-- the man pages have been rewritten in POD format and adjusted for Zeppe-Lin
-- added `CRYPTSETUP_BIN` make variable to specify custom cryptsetup(8) location
-  (`/sbin/cryptsetup.static` for example)
+- add the LICENSE file (the license was obtained from git history of
+  Matthew's initial Arch Linux package)
+- the man pages have been rewritten in POD format and adjusted for
+  Zeppe-Lin
+- added `CRYPTSETUP_BIN` make variable to specify custom cryptsetup(8)
+  location (`/sbin/cryptsetup.static` for example)
 
 See git log for complete/further differences.
 
@@ -37,8 +37,8 @@ REQUIREMENTS
 
 INSTALL
 -------
-The shell commands `make && make install` should build and install this
-package.
+The shell commands `make && make install` should build and install
+this package.
 
 
 LICENSE
