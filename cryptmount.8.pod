@@ -104,12 +104,12 @@ the B<swap> option and any B<size>=size option; or B<-O
 swap,size=512> matches only those I<volumes> with the B<swap> option
 and specifically B<size=512>.
 
-A filter option may also be negated by prefixing it with a B<!>. For
+A filter option may also be negated by prefixing it with a B<!>.  For
 example, B<-O swap,!size> includes all I<volumes> with the B<swap>
 option but B<without> the I<size> option.  There is a built-in filter
 B<!noauto>.
 
-Filters are especially useful with B<%>tag options. For example, B<-O
+Filters are especially useful with B<%>tag options.  For example, B<-O
 !%random> can be used to map all I<volumes> which don’t use
 B</dev/urandom> for a password and B<-O %random> to map the remainder
 once your system’s random seed has been restored.
