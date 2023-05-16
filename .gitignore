@@ -1,5 +1,10 @@
-# tarballs
+# dist tarballs
 *.tar.gz
 
-# vim undo
+# build files and artefacts
+cryptmount.8
+crypttab.5
+cryptmount
+
+# vim undo files
 .*.un~
