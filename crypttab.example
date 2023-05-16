@@ -4,13 +4,13 @@
 # See crypttab(5) for more information.
 #
 
-# NAME    - name of volume, /dev/mapper/NAME
-# DEVICE  - absolute path, UUID, PARTUUID, or LABEL of device or file
-# KEY     - -|<file>|<device>[[:fstype]:<file>]
-# OPTIONS - options for cryptsetup, 'swap' runs mkswap after mapping,
-#           'noauto' prevents automatic mapping
+# NAME:    name of volume, /dev/mapper/NAME
+# DEVICE:  absolute path, UUID, PARTUUID, or LABEL of device or file
+# KEY:     -|<file>|<device>[[:fstype]:<file>]
+# OPTIONS: options for cryptsetup(8), 'swap' runs mkswap(8) after
+#          mapping, 'noauto' prevents automatic mapping
 
-#NAME      DEVICE              KEY                 OPTIONS
+# NAME     DEVICE              KEY                 OPTIONS
 #root      /dev/sda1
 #usr       /dev/sda2           -                   allow-discards
 #home      /dev/sdb1           LABEL=usbdrv:/key
