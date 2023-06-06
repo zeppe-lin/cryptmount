@@ -1,11 +1,11 @@
 # project metadata
-NAME = cryptmount
+NAME    = cryptmount
 VERSION = 0.2
-DIST = ${NAME}-${VERSION}
+DIST    = ${NAME}-${VERSION}
 
 # cryptsetup(8) default binary
 CRYPTSETUP_BIN = cryptsetup
 
 # paths
-PREFIX = /usr/local
+PREFIX    = /usr/local
 MANPREFIX = ${PREFIX}/share/man
