@@ -153,26 +153,26 @@ ct_main() {
 	while getopts ":$SHORTOPTS" opt ; do
 
 		case $opt in
-			L) set_action list ;;
-			M) set_action map ;;
-			U) set_action unmap ;;
-			c) CRYPTTAB="$OPTARG" ;;
-			f) FORCE=1 ;;
-			w) WAITTIME=$(printf '%s\n', "$OPTARG" | sed 's/[^0-9]//g') ;;
-			n) DRYRUN=1 ;;
-			q) LOGLEVEL=$(( LOGLEVEL - 1 )) ;;
-			v) LOGLEVEL=$(( LOGLEVEL + 1 )) ;;
-			h) ct_print_usage 0 ;;
-			o) OPTIONS="$OPTIONS,$OPTARG" ;;
-			O) FILTER="$FILTER,$OPTARG" ;;
-			:)
-				error "option requires an argument -- '$OPTARG'"
-				ct_print_usage 1
-				;;
-			?)
-				error "invalid option -- '$OPTARG'"
-				ct_print_usage 1
-				;;
+		L) set_action list ;;
+		M) set_action map ;;
+		U) set_action unmap ;;
+		c) CRYPTTAB="$OPTARG" ;;
+		f) FORCE=1 ;;
+		w) WAITTIME=$(printf '%s\n', "$OPTARG" | sed 's/[^0-9]//g') ;;
+		n) DRYRUN=1 ;;
+		q) LOGLEVEL=$(( LOGLEVEL - 1 )) ;;
+		v) LOGLEVEL=$(( LOGLEVEL + 1 )) ;;
+		h) ct_print_usage 0 ;;
+		o) OPTIONS="$OPTIONS,$OPTARG" ;;
+		O) FILTER="$FILTER,$OPTARG" ;;
+		:)
+			error "option requires an argument -- '$OPTARG'"
+			ct_print_usage 1
+			;;
+		?)
+			error "invalid option -- '$OPTARG'"
+			ct_print_usage 1
+			;;
 		esac
 
 	done
@@ -335,28 +335,28 @@ ct_read_crypttab() {
 		fi
 
 		case $key in
-			-|none|"")
-				key=-
-				;;
-			/dev/random|/dev/urandom|/dev/hw_random)
-				options="$options,%random"
-				;;
-			ASK)
-				info "$CRYPTTAB:$lineno: ASK is a deprecated key, please use '-' or 'none'"
-				key=-
-				;;
-			SWAP)
-				info "$CRYPTTAB:$lineno: SWAP is a deprecated key, please use '/dev/urandom' and the 'swap' option"
-				key="/dev/urandom"
-				options="$options,swap,%random"
-				;;
-			/*|UUID=*|PARTUUID=*|LABEL=*)
-				:
-				;;
-			*)
-				warn "$CRYPTTAB:$lineno: plain text keys are not supported"
-				key=-
-				;;
+		-|none|"")
+			key=-
+			;;
+		/dev/random|/dev/urandom|/dev/hw_random)
+			options="$options,%random"
+			;;
+		ASK)
+			info "$CRYPTTAB:$lineno: ASK is a deprecated key, please use '-' or 'none'"
+			key=-
+			;;
+		SWAP)
+			info "$CRYPTTAB:$lineno: SWAP is a deprecated key, please use '/dev/urandom' and the 'swap' option"
+			key="/dev/urandom"
+			options="$options,swap,%random"
+			;;
+		/*|UUID=*|PARTUUID=*|LABEL=*)
+			:
+			;;
+		*)
+			warn "$CRYPTTAB:$lineno: plain text keys are not supported"
+			key=-
+			;;
 		esac
 
 		if ct_check_filter $options; then
@@ -456,35 +456,35 @@ ct_map() {
 
 	# parse various key formats
 	case "$key" in
-		*:*:*)
-			key_dev="${key%%:*}"
-			key="${key#*:}"
-			key_fstype="${key%%:*}"
-			key="${key#*:}"
-			case "$key_fstype" in
-				*[!0-9]*)
-					: ;;
-				*)
-					warn "<dev>:<offset>:<length> is a deprecated key format. Please use"
-					warn " the keyfile-offset and keyfile-size options instead. This"
-					warn " format will *soon* be removed from cryptmount/crypttab!"
-					opts="$opts --keyfile-offset=$key_fstype --keyfile-size=$key"
-					key="$key_dev"
-					unset key_fstype
-					unset key_dev
-			esac
-			;;
-		*:*)
-			key_dev="${key%%:*}"
-			key="${key#*:}"
-			;;
-		""|-)
-			unset key_dev
-			unset key
-			;;
+	*:*:*)
+		key_dev="${key%%:*}"
+		key="${key#*:}"
+		key_fstype="${key%%:*}"
+		key="${key#*:}"
+		case "$key_fstype" in
+		*[!0-9]*)
+			: ;;
 		*)
+			warn "<dev>:<offset>:<length> is a deprecated key format. Please use"
+			warn " the keyfile-offset and keyfile-size options instead. This"
+			warn " format will *soon* be removed from cryptmount/crypttab!"
+			opts="$opts --keyfile-offset=$key_fstype --keyfile-size=$key"
+			key="$key_dev"
+			unset key_fstype
 			unset key_dev
-			;;
+		esac
+		;;
+	*:*)
+		key_dev="${key%%:*}"
+		key="${key#*:}"
+		;;
+	""|-)
+		unset key_dev
+		unset key
+		;;
+	*)
+		unset key_dev
+		;;
 	esac
 
 	# resolve any needed key device and mount if necessary
@@ -541,7 +541,7 @@ ct_map() {
 		info "device '$dev' detected as LUKS"
 
 		if run @CRYPTSETUP_BIN@ luksOpen $key $args "$dev" "$name"; then
-			info "sucessfully mapped '$dev' to '/dev/mapper/$name'"
+			info "successfully mapped '$dev' to '/dev/mapper/$name'"
 		else
 			error "unable to map '$dev' to '/dev/mapper/$name'"
 			ret=1
@@ -559,7 +559,7 @@ ct_map() {
 			error " the -f option"
 			ret=1
 		elif run @CRYPTSETUP_BIN@ create $key $args "$name" "$dev"; then
-			info "sucessfully mapped '$dev' to '/dev/mapper/$name'"
+			info "successfully mapped '$dev' to '/dev/mapper/$name'"
 			if [ "$tmpfs" = "swap" ]; then
 				if run mkswap -f -L "$name" "/dev/mapper/$name"; then
 					info "mkswap successful on '/dev/mapper/$name'"
@@ -639,63 +639,63 @@ ct_parse_options() {
 		# separate key and value
 		unset key val
 		case "$opt" in
-			"")
-				continue;;
-			-*)
-				if [ $depr -eq 0 ]; then
-					info "You are using a deprecated format for the options field. The entire"
-					info " field will be passed directly to cryptsetup. Please use the more"
-					info " standardized comma-deliminated options list instead. This format"
-					info " will be removed in a future version of cryptmount/crypttab!"
-					depr=1
-				fi
-				args="$args $opt"
-				continue
-				;;
-			*=*)
-				key="${opt%%=*}"
-				val="${opt#*=}"
-				[ "$key" = "$val" ] && unset val
-				;;
-			*)
-				key="$opt";;
+		"")
+			continue;;
+		-*)
+			if [ $depr -eq 0 ]; then
+				info "You are using a deprecated format for the options field. The entire"
+				info " field will be passed directly to cryptsetup. Please use the more"
+				info " standardized comma-deliminated options list instead. This format"
+				info " will be removed in a future version of cryptmount/crypttab!"
+				depr=1
+			fi
+			args="$args $opt"
+			continue
+			;;
+		*=*)
+			key="${opt%%=*}"
+			val="${opt#*=}"
+			[ "$key" = "$val" ] && unset val
+			;;
+		*)
+			key="$opt";;
 		esac
 
 		case "$key" in
-			swap)
-				# set external variable
-				tmpfs="swap"
-				;;
-			luks|plain)
-				warn "Ignoring option $key, LUKS volumes are automatically detected"
-				;;
-			noauto|%*)
-				:
-				;;
-			skip|precheck|check|checkargs|noearly|loud|keyscript)
-				warn "Ignoring Debian specific option '$key'"
-				;;
-			tmp)
-				# set an external variable
-				[ -z "$val" ] && msg "Defaulting tmp to ext4"
-				tmpfs="${val:-ext4}"
-				;;
-			size)
-				args="$args --key-size $val"
-				;;
-			device-size)
-				args="$args --size $val"
-				;;
-			none)
-				args=
-				;;
-			*)
-				if [ ${#key} -eq 1 ]; then
-					args="$args -$key $val"
-				else
-					args="$args --$key $val"
-				fi
-				;;
+		swap)
+			# set external variable
+			tmpfs="swap"
+			;;
+		luks|plain)
+			warn "Ignoring option $key, LUKS volumes are automatically detected"
+			;;
+		noauto|%*)
+			:
+			;;
+		skip|precheck|check|checkargs|noearly|loud|keyscript)
+			warn "Ignoring Debian specific option '$key'"
+			;;
+		tmp)
+			# set an external variable
+			[ -z "$val" ] && msg "Defaulting tmp to ext4"
+			tmpfs="${val:-ext4}"
+			;;
+		size)
+			args="$args --key-size $val"
+			;;
+		device-size)
+			args="$args --size $val"
+			;;
+		none)
+			args=
+			;;
+		*)
+			if [ ${#key} -eq 1 ]; then
+				args="$args -$key $val"
+			else
+				args="$args --$key $val"
+			fi
+			;;
 		esac
 
 	done
