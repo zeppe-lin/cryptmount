@@ -107,6 +107,8 @@ get_mount() {
 }
 
 substring() {
+	# XXX: awk is in /usr/bin.
+	# XXX: That breaks "separate /usr" boot.
 	printf "%s\n" "$1" | awk -v start="$2" -v count="$3" \
 		'{print(substr($0,start+1,count));}'
 }
@@ -320,7 +322,9 @@ ct_read_crypttab() {
 	while read -r name dev key options <&3; do
 
 		lineno=$(( lineno + 1 ))
-		[ -z "$name" ] || [ "$(substring "$name" 0 1)" = "#" ] && continue
+
+		# skip comments and empty lines
+		case $name in \#* | "" ) continue ;; esac
 
 		# unescape devname and keyname
 		name=$(printf '%b' "$name")
@@ -604,6 +608,9 @@ ct_resolve_device() {
 			tmp="$(blkid -l -o device -t "$device")"
 			if [ -z "$tmp" ]; then
 				if [ $UDEVRUNNING -eq 1 ]; then
+					# XXX: awk is in /usr/bin.
+					# XXX: That breaks "separate
+					# XXX: /usr" boot.
 					tag="$(awk -v t="${device%%=*}" 'BEGIN { print tolower(t) }')"
 					tagval="${device#*=}"
 					device="/dev/disk/by-$tag/$tagval"
