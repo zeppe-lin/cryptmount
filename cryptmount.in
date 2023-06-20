@@ -106,13 +106,6 @@ get_mount() {
 	fi
 }
 
-substring() {
-	# XXX: awk is in /usr/bin.
-	# XXX: That breaks "separate /usr" boot.
-	printf "%s\n" "$1" | awk -v start="$2" -v count="$3" \
-		'{print(substr($0,start+1,count));}'
-}
-
 # Make temporary directory.  Use it instead of "/usr/bin/mktemp -d", since
 # cryptmount is used in /etc/rc and must not require /usr/* utilities.
 mkdtemp() {
