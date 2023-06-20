@@ -1,6 +1,6 @@
 #!/bin/sh
 
-readonly PROGRAM=${0##*/}
+readonly PROGRAM="${0##*/}"
 
 SHORTOPTS="LMUc:fw:nqvho:O:"
 DEPS="cryptsetup blkid mkswap"
