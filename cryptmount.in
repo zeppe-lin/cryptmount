@@ -620,7 +620,9 @@ ct_resolve_device() {
 			fi
 	esac
 
-	if [ ! -e "$device" -a "$(substring "$device" 0 5)" = "/dev/" -a "$UDEVRUNNING" -eq 1 ]; then
+	if [ ! -e "$device" ] \
+	&& case $device in /dev/*) true ;; *) false ;; esac \
+	&& [ "$UDEVRUNNING" -eq 1 ]; then
 		msg "Waiting $seconds seconds for '$device'..."
 		until [ -e "$device" -o $seconds -eq 0 ]; do
 			sleep 1
