@@ -608,10 +608,7 @@ ct_resolve_device() {
 			tmp="$(blkid -l -o device -t "$device")"
 			if [ -z "$tmp" ]; then
 				if [ $UDEVRUNNING -eq 1 ]; then
-					# XXX: awk is in /usr/bin.
-					# XXX: That breaks "separate
-					# XXX: /usr" boot.
-					tag="$(awk -v t="${device%%=*}" 'BEGIN { print tolower(t) }')"
+					tag="$(echo "${device%%=*}" | sed 's/./\L&/g')"
 					tagval="${device#*=}"
 					device="/dev/disk/by-$tag/$tagval"
 				fi
