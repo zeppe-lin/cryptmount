@@ -385,10 +385,22 @@ ct_check_filter() {
 
 	for fltr in $FILTER; do
 		fltr="$(trim $fltr)"
-		[ -z "$fltr" ] && continue
 
-		if [ x"$(substring "$fltr" 0 1)" != "x!" ]; then
+		case $fltr in
+		"")
+			continue
+			;;
+		\!*)
+			for opt in $*; do
+				opt="$(trim $opt)"
+				[ -z "$opt" ] && continue
 
+				if [ "$fltr" = "!$opt" -o "$fltr" = "!${opt%%=*}" ]; then
+					return 1
+				fi
+			done
+			;;
+		*)
 			for opt in $*; do
 				opt="$(trim $opt)"
 				[ -z "$opt" ] && continue
@@ -399,20 +411,8 @@ ct_check_filter() {
 			done
 
 			return 1
-
-		else
-
-			for opt in $*; do
-				opt="$(trim $opt)"
-				[ -z "$opt" ] && continue
-
-				if [ "$fltr" = "!$opt" -o "$fltr" = "!${opt%%=*}" ]; then
-					return 1
-				fi
-			done
-
-		fi
-
+			;;
+		esac
 	done
 
 	return 0
