@@ -46,7 +46,7 @@ Options:
   -q      decrease verbosity
   -v      increase verbosity
   -V      print version and exit
-  -h      print this message
+  -h      print help and exit
   -o OPT[,...]
           options which are appened to the options defined in crypttab
           (they take precedence). specifying this multiple times is
