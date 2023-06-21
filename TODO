@@ -16,6 +16,7 @@ TODO cryptmount
 
 	---
 
-	[ ] Add '-v' for version.
+	[X] Add '-V' for version.
+	Done: Wed Jun 21 12:42:18 PM EEST 2023
 
 End of file.
