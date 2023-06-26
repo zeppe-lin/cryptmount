@@ -90,7 +90,7 @@ Print version and exit.
 
 =item B<-h>
 
-Print a short usage message and exit.
+Print help and exit.
 
 =item B<-o> I<options>
 
