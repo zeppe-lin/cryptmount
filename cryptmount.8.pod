@@ -84,6 +84,10 @@ Increase verbosity.  This prints the commands which are being called
 
 Decrease verbosity.
 
+=item B<-V>
+
+Print version and exit.
+
 =item B<-h>
 
 Print a short usage message and exit.
