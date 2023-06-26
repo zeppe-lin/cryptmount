@@ -475,8 +475,7 @@ ct_map() {
 			warn " format will *soon* be removed from cryptmount/crypttab!"
 			opts="$opts --keyfile-offset=$key_fstype --keyfile-size=$key"
 			key="$key_dev"
-			unset key_fstype
-			unset key_dev
+			unset key_fstype key_dev
 		esac
 		;;
 	*:*)
@@ -484,8 +483,7 @@ ct_map() {
 		key="${key#*:}"
 		;;
 	""|-)
-		unset key_dev
-		unset key
+		unset key_dev key
 		;;
 	*)
 		unset key_dev
