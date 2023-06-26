@@ -95,9 +95,7 @@ run() {
 }
 
 trim() {
-	local IFS
-	IFS="$(printf ' \n\t')"
-	echo -n $*
+	IFS="$(printf ' \n\t')" printf "%s" $*
 }
 
 get_mount() {
@@ -384,7 +382,7 @@ ct_check_filter() {
 	IFS="$(printf ',')"
 
 	for fltr in $FILTER; do
-		fltr="$(trim $fltr)"
+		fltr="$(trim "$fltr")"
 
 		case $fltr in
 		"")
@@ -392,7 +390,7 @@ ct_check_filter() {
 			;;
 		\!*)
 			for opt in $*; do
-				opt="$(trim $opt)"
+				opt="$(trim "$opt")"
 				[ -z "$opt" ] && continue
 
 				if [ "$fltr" = "!$opt" -o "$fltr" = "!${opt%%=*}" ]; then
@@ -402,7 +400,7 @@ ct_check_filter() {
 			;;
 		*)
 			for opt in $*; do
-				opt="$(trim $opt)"
+				opt="$(trim "$opt")"
 				[ -z "$opt" ] && continue
 
 				if [ "$fltr" = "$opt" -o "$fltr" = "${opt%%=*}" ]; then
