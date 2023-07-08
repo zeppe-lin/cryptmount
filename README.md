@@ -30,6 +30,7 @@ REQUIREMENTS
 
 **Runtime**:
 - POSIX sh(1p) and "mandatory utilities"
+- findmnt(8)
 - cryptsetup(8)
 - blkid(8)
 - mkswap(8)
