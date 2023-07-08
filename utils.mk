@@ -1,10 +1,12 @@
 include config.mk
 
+GREP_DEFS = --exclude-dir=.git --exclude-dir=.github -R .
+
 urlcodes:
 	@echo "=======> Check URLs for response code"
-	@grep -Eiho "https?://[^\"\\'> ]+" *.*      \
-		| xargs -P10 -I{} curl -o /dev/null \
-		 -sw "[%{http_code}] %{url}\n" '{}' \
+	@grep -Eiho "https?://[^\"\\'> ]+" ${GREP_DEFS} \
+		| xargs -P10 -I{} curl -o /dev/null     \
+		 -sw "[%{http_code}] %{url}\n" '{}'     \
 		| sort -u
 
 depscheck:
