@@ -156,11 +156,6 @@ ct_main() {
 
 	shift $(( OPTIND - 1 ))
 
-	# Warn if any of the dependencies are missing
-	for dep in $DEPS; do
-		type $dep >/dev/null 2>&1 || info "$dep not found, some functionality may fail"
-	done
-
 	# Check for UDEV
 	if pidof udevd >/dev/null 2>&1; then
 		UDEVRUNNING=1
@@ -675,7 +670,6 @@ ct_parse_options() {
 
 readonly PROGRAM="${0##*/}"
 readonly SHORTOPTS="LMUc:fw:nqvVho:O:"
-readonly DEPS="cryptsetup blkid mkswap"
 
 UDEVRUNNING=0
 LOGLEVEL=1
