@@ -1,19 +1,5 @@
 #!/bin/sh
 
-readonly PROGRAM="${0##*/}"
-
-SHORTOPTS="LMUc:fw:nqvVho:O:"
-DEPS="cryptsetup blkid mkswap"
-UDEVRUNNING=0
-
-LOGLEVEL=1
-DRYRUN=0
-WAITTIME=10
-CRYPTTAB=/etc/crypttab
-OPTIONS=
-FILTER="!noauto"
-FORCE=0
-
 ct_print_version() {
 	echo "$PROGRAM @VERSION@"
 	exit 0
@@ -507,9 +493,7 @@ ct_map() {
 
 	fi
 
-	if [ "$key" ]; then
-		key=--key-file="$key"
-	fi
+	[ "$key" ] && key=--key-file="$key"
 
 	local ret=0
 
@@ -680,6 +664,28 @@ ct_parse_options() {
 
 	return 0
 }
+
+
+######################################################################
+# Global vars                                                        #
+######################################################################
+
+readonly PROGRAM="${0##*/}"
+
+SHORTOPTS="LMUc:fw:nqvVho:O:"
+DEPS="cryptsetup blkid mkswap"
+UDEVRUNNING=0
+
+LOGLEVEL=1
+DRYRUN=0
+WAITTIME=10
+CRYPTTAB=/etc/crypttab
+OPTIONS=
+FILTER="!noauto"
+FORCE=0
+
+
+######################################################################
 
 ct_main "$@"
 
