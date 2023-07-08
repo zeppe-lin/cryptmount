@@ -1,6 +1,7 @@
 .POSIX:
 
 include config.mk
+include utils.mk
 
 all: cryptmount cryptmount.8 crypttab.5
 
