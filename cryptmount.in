@@ -297,7 +297,6 @@ ct_read_crypttab() {
 	fi
 
 	while read -r name dev key options <&3; do
-
 		lineno=$(( lineno + 1 ))
 
 		# skip comments and empty lines
@@ -400,14 +399,14 @@ ct_check_filter() {
 ######################################################################
 
 ct_unmap() {
-	local name="$1"
+	# name: $1
 
-	if [ ! -e "/dev/mapper/$name" ]; then
-		warn "Volume was not mapped (no '/dev/mapper/$name')"
-	elif run @CRYPTSETUP_BIN@ remove "$name"; then
-		info "$name unmapped"
+	if [ ! -e "/dev/mapper/$1" ]; then
+		warn "Volume was not mapped (no '/dev/mapper/$1')"
+	elif run @CRYPTSETUP_BIN@ remove "$1"; then
+		info "$1 unmapped"
 	else
-		error "failed to unmap $name"
+		error "failed to unmap $1"
 		false
 	fi
 }
