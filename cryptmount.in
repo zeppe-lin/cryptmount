@@ -671,11 +671,10 @@ ct_parse_options() {
 ######################################################################
 
 readonly PROGRAM="${0##*/}"
+readonly SHORTOPTS="LMUc:fw:nqvVho:O:"
+readonly DEPS="cryptsetup blkid mkswap"
 
-SHORTOPTS="LMUc:fw:nqvVho:O:"
-DEPS="cryptsetup blkid mkswap"
 UDEVRUNNING=0
-
 LOGLEVEL=1
 DRYRUN=0
 WAITTIME=10
