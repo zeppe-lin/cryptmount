@@ -1,7 +1,12 @@
 include config.mk
 
-check_requirements:
+depscheck:
 	@which ${CRYPTSETUP_BIN} blkid mkswap
 
-check_pods:
+podchecker:
 	@podchecker *.pod
+
+shellcheck:
+	@shellcheck -s sh cryptmount.in
+
+.PHONY: depscheck podchecker shellcheck
