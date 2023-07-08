@@ -180,7 +180,7 @@ ct_main() {
 	}
 	preparse
 
-	if [ -z "$action" -o "$action" = "list" ]; then
+	if [ -z "$action" ] || [ "$action" = "list" ]; then
 
 		if [ $# -ne 0 ]; then
 			warn "With -L, volumes given on the command line have no effect"
@@ -237,7 +237,7 @@ ct_main_map() {
 		local vol _tmp="$1"
 
 		find_func() {
-			if [ "$1" = "$_tmp" -o "$2" = "$_tmp" ]; then
+			if [ "$1" = "$_tmp" ] || [ "$2" = "$_tmp" ]; then
 				printf "%s" "$*"
 			else
 				false
@@ -269,7 +269,7 @@ ct_main_map() {
 ######################################################################
 
 ct_read_crypttab() {
-	if [ ! -f "$CRYPTTAB" -o ! -r "$CRYPTTAB" ]; then
+	if [ ! -f "$CRYPTTAB" ] || [ ! -r "$CRYPTTAB" ]; then
 		error "cannot read $CRYPTTAB"
 		return 1
 	fi
@@ -356,7 +356,7 @@ ct_check_filter() {
 				opt="$(trim "$opt")"
 				[ -z "$opt" ] && continue
 
-				if [ "$fltr" = "!$opt" -o "$fltr" = "!${opt%%=*}" ]; then
+				if [ "$fltr" = "!$opt" ] || [ "$fltr" = "!${opt%%=*}" ]; then
 					return 1
 				fi
 			done
@@ -366,7 +366,7 @@ ct_check_filter() {
 				opt="$(trim "$opt")"
 				[ -z "$opt" ] && continue
 
-				if [ "$fltr" = "$opt" -o "$fltr" = "${opt%%=*}" ]; then
+				if [ "$fltr" = "$opt" ] || [ "$fltr" = "${opt%%=*}" ]; then
 					continue 2
 				fi
 			done
@@ -464,6 +464,9 @@ ct_map() {
 
 				[ -n "$key_fstype" ] && key_fstype="-t $key_fstype"
 
+				# Intentional word splitting for
+				# $key_fstype.
+				# shellcheck disable=2086
 				if run mount -r $key_fstype "$key_dev" "$key_mntpnt"; then
 					key="$key_mntpnt/$key"
 					key_dev_umount=1
@@ -483,7 +486,7 @@ ct_map() {
 			unset key
 		fi
 
-	elif [ -n "$key" -a "$key" != "-" ]; then
+	elif [ -n "$key" ] && [ "$key" != "-" ]; then
 
 		if ! key="$(ct_resolve_device "$key")"; then
 			error "key '$key' not found"
@@ -577,7 +580,7 @@ ct_resolve_device() {
 	&& case $device in /dev/*) true ;; *) false ;; esac \
 	&& [ "$UDEVRUNNING" -eq 1 ]; then
 		msg "Waiting $seconds seconds for '$device'..."
-		until [ -e "$device" -o $seconds -eq 0 ]; do
+		until [ -e "$device" ] || [ $seconds -eq 0 ]; do
 			sleep 1
 			seconds=$(( seconds - 1 ))
 		done
