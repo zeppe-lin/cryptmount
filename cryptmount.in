@@ -102,8 +102,9 @@ get_mount() {
 	findmnt -cfmnoTARGET "$1"
 }
 
-# Make temporary directory.  Use it instead of "/usr/bin/mktemp -d", since
-# cryptmount is used in /etc/rc and must not require /usr/* utilities.
+# Make temporary directory.  Use it instead of "/usr/bin/mktemp -d",
+# since cryptmount is used in /etc/rc and must not require /usr/*
+# utilities.
 mkdtemp() {
 	# initial entropy, the more we can get the better
 	local random=$(( $(date +%S%M%H%j) + $$ ))
@@ -130,7 +131,6 @@ mkdtemp() {
 ######################################################################
 
 ct_main() {
-
 	local action
 
 	set_action() {
@@ -142,8 +142,7 @@ ct_main() {
 		fi
 	}
 
-	while getopts ":$SHORTOPTS" opt ; do
-
+	while getopts ":$SHORTOPTS" opt; do
 		case $opt in
 		L) set_action list ;;
 		M) set_action map ;;
@@ -167,7 +166,6 @@ ct_main() {
 			ct_print_usage 1
 			;;
 		esac
-
 	done
 
 	shift $(( OPTIND - 1 ))
@@ -226,34 +224,24 @@ ct_main() {
 		ct_main_map "$@"
 
 	else
-
 		error "Internal error: no action"
 		false
-
 	fi
 }
 
 ct_main_unmap() {
-
 	if [ $# -eq 0 ]; then
-
 		ct_read_crypttab ct_unmap
-
 	else
-
 		local vol ret=0
-
 		for vol in "$@"; do
 			ct_unmap "$vol" || ret=$(( ret+1 ))
 		done
-
 		return $ret
-
 	fi
 }
 
 ct_main_map() {
-
 	if [ $# -eq 0 ]; then
 
 		ct_read_crypttab ct_map
@@ -295,7 +283,6 @@ ct_main_map() {
 ######################################################################
 
 ct_read_crypttab() {
-
 	if [ ! -f "$CRYPTTAB" -o ! -r "$CRYPTTAB" ]; then
 		error "cannot read $CRYPTTAB"
 		return 1
@@ -369,7 +356,6 @@ ct_read_crypttab() {
 }
 
 ct_check_filter() {
-
 	local IFS fltr opt
 	IFS="$(printf ',')"
 
@@ -415,6 +401,7 @@ ct_check_filter() {
 
 ct_unmap() {
 	local name="$1"
+
 	if [ ! -e "/dev/mapper/$name" ]; then
 		warn "Volume was not mapped (no '/dev/mapper/$name')"
 	elif run @CRYPTSETUP_BIN@ remove "$name"; then
@@ -426,7 +413,6 @@ ct_unmap() {
 }
 
 ct_map() {
-
 	local name="$1" dev="$2" key="$3" args="" tmpfs
 	local key_dev="" key_fstype="" key_mntpnt="" key_dev_umount=0
 	shift 3
@@ -457,15 +443,15 @@ ct_map() {
 		key_fstype="${key%%:*}"
 		key="${key#*:}"
 		case "$key_fstype" in
-		*[!0-9]*)
-			: ;;
-		*)
-			warn "<dev>:<offset>:<length> is a deprecated key format. Please use"
-			warn " the keyfile-offset and keyfile-size options instead. This"
-			warn " format will *soon* be removed from cryptmount/crypttab!"
-			opts="$opts --keyfile-offset=$key_fstype --keyfile-size=$key"
-			key="$key_dev"
-			unset key_fstype key_dev
+	*[!0-9]*)
+		: ;;
+	*)
+		warn "<dev>:<offset>:<length> is a deprecated key format. Please use"
+		warn " the keyfile-offset and keyfile-size options instead. This"
+		warn " format will *soon* be removed from cryptmount/crypttab!"
+		opts="$opts --keyfile-offset=$key_fstype --keyfile-size=$key"
+		key="$key_dev"
+		unset key_fstype key_dev
 		esac
 		;;
 	*:*)
@@ -544,8 +530,8 @@ ct_map() {
 
 		info "device '$dev' assumed to be plain"
 
-		# cryptsetup 'create' can be destructive, don't do it if blkid can
-		# identify the device type
+		# cryptsetup 'create' can be destructive, don't do it
+		# if blkid can identify the device type
 		if [ $FORCE -ne 1 ] && blkid -p "$dev" >/dev/null 2>&1; then
 			error "Refusing to call 'cryptsetup create' on device that might"
 			error " have data. If you are sure this is what you want, use"
@@ -588,21 +574,20 @@ ct_map() {
 }
 
 ct_resolve_device() {
-
 	local tmp="" device="$1" seconds=$WAITTIME tag tagval
 
 	case "$device" in
-		UUID=*|PARTUUID=*|LABEL=*)
-			tmp="$(blkid -l -o device -t "$device")"
-			if [ -z "$tmp" ]; then
-				if [ $UDEVRUNNING -eq 1 ]; then
-					tag="$(echo "${device%%=*}" | sed 's/./\L&/g')"
-					tagval="${device#*=}"
-					device="/dev/disk/by-$tag/$tagval"
-				fi
-			else
-				device="$tmp"
+	UUID=*|PARTUUID=*|LABEL=*)
+		tmp="$(blkid -l -o device -t "$device")"
+		if [ -z "$tmp" ]; then
+			if [ $UDEVRUNNING -eq 1 ]; then
+				tag="$(echo "${device%%=*}" | sed 's/./\L&/g')"
+				tagval="${device#*=}"
+				device="/dev/disk/by-$tag/$tagval"
 			fi
+		else
+			device="$tmp"
+		fi
 	esac
 
 	if [ ! -e "$device" ] \
@@ -626,7 +611,6 @@ ct_resolve_device() {
 }
 
 ct_parse_options() {
-
 	local IFS=',' optlst="$*" opt key val depr=0
 
 	for opt in $optlst; do
