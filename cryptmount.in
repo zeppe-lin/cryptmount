@@ -99,15 +99,7 @@ trim() {
 }
 
 get_mount() {
-	if type findmnt >/dev/null 2>&1 ; then
-		findmnt -cfmnoTARGET "$1"
-	else
-		# XXX: awk is in /usr/bin.
-		# XXX: That breaks a "separate /usr" boot.
-		cat /proc/self/mountinfo | \
-		awk -v dev="$1" \
-		'{ for(i=7;$i!="-";$i++); if($(i+2)==dev&&$4=="/"){print $5;r=1;exit}} END {exit !r}'
-	fi
+	findmnt -cfmnoTARGET "$1"
 }
 
 # Make temporary directory.  Use it instead of "/usr/bin/mktemp -d", since
