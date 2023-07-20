@@ -136,10 +136,10 @@ ct_main() {
 		n) DRYRUN=1 ;;
 		q) LOGLEVEL=$(( LOGLEVEL - 1 )) ;;
 		v) LOGLEVEL=$(( LOGLEVEL + 1 )) ;;
-		V) ct_print_version ;;
-		h) ct_print_usage 0 ;;
 		o) OPTIONS="$OPTIONS,$OPTARG" ;;
 		O) FILTER="$FILTER,$OPTARG" ;;
+		V) ct_print_version ;;
+		h) ct_print_usage 0 ;;
 		:)
 			error "option requires an argument -- '$OPTARG'"
 			ct_print_usage 1
@@ -437,7 +437,7 @@ ct_map() {
 		key_dev="${key%%:*}"
 		key="${key#*:}"
 		;;
-	""|-)
+	"" | -)
 		unset key_dev key
 		;;
 	*)
