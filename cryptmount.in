@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=3043
 
 ct_print_version() {
 	echo "$PROGRAM @VERSION@"
@@ -51,7 +52,7 @@ EOF
 ######################################################################
 
 error() {
-	[ $LOGLEVEL -ge 0 ] && printf "E: %s\n" "$*" >&2 || true
+	[ $LOGLEVEL -ge 0 ] && printf "E: %s\n" "$*" >&2
 }
 
 die() {
@@ -60,24 +61,20 @@ die() {
 }
 
 warn() {
-	[ $LOGLEVEL -ge 1 ] && printf "W: %s\n" "$*" >&2 || true
+	[ $LOGLEVEL -ge 1 ] && printf "W: %s\n" "$*" >&2
 }
 
 msg() {
-	[ $LOGLEVEL -ge 1 ] && printf "M: %s\n" "$*" >&2 || true
+	[ $LOGLEVEL -ge 1 ] && printf "M: %s\n" "$*" >&2
 }
 
 info() {
-	[ $LOGLEVEL -ge 2 ] && printf "I: %s\n" "$*" >&2 || true
+	[ $LOGLEVEL -ge 2 ] && printf "I: %s\n" "$*" >&2
 }
 
 run() {
 	[ $LOGLEVEL -ge 2 ] && printf "R: %s\n" "$*" >&2
-	if [ $DRYRUN -eq 1 ]; then
-		true
-	else
-		"$@"
-	fi
+	[ $DRYRUN   -eq 0 ] && "$@"
 }
 
 trim() {
@@ -216,7 +213,7 @@ ct_main_unmap() {
 	else
 		local vol ret=0
 		for vol in "$@"; do
-			ct_unmap "$vol" || ret=$(( ret+1 ))
+			ct_unmap "$vol" || ret=$(( ret + 1 ))
 		done
 		return $ret
 	fi
@@ -297,10 +294,10 @@ ct_read_crypttab() {
 		fi
 
 		case $key in
-		-|none|"")
+		- | none | "")
 			key=-
 			;;
-		/dev/random|/dev/urandom|/dev/hw_random)
+		/dev/random | /dev/urandom | /dev/hw_random)
 			options="$options,%random"
 			;;
 		ASK)
@@ -312,7 +309,7 @@ ct_read_crypttab() {
 			key="/dev/urandom"
 			options="$options,swap,%random"
 			;;
-		/*|UUID=*|PARTUUID=*|LABEL=*)
+		/* | UUID=* | PARTUUID=* | LABEL=*)
 			:
 			;;
 		*)
@@ -351,7 +348,8 @@ ct_check_filter() {
 				opt="$(trim "$opt")"
 				[ -z "$opt" ] && continue
 
-				if [ "$fltr" = "!$opt" ] || [ "$fltr" = "!${opt%%=*}" ]; then
+				if [ "$fltr" = "!$opt"       ] ||
+				   [ "$fltr" = "!${opt%%=*}" ]; then
 					return 1
 				fi
 			done
@@ -361,7 +359,8 @@ ct_check_filter() {
 				opt="$(trim "$opt")"
 				[ -z "$opt" ] && continue
 
-				if [ "$fltr" = "$opt" ] || [ "$fltr" = "${opt%%=*}" ]; then
+				if [ "$fltr" = "$opt"       ] ||
+				   [ "$fltr" = "${opt%%=*}" ]; then
 					continue 2
 				fi
 			done
@@ -555,10 +554,10 @@ ct_map() {
 }
 
 ct_resolve_device() {
-	local tmp="" device="$1" seconds=$WAITTIME tag tagval
+	local tmp="" device="$1" seconds="$WAITTIME" tag tagval
 
 	case "$device" in
-	UUID=*|PARTUUID=*|LABEL=*)
+	UUID=* | PARTUUID=* | LABEL=*)
 		tmp="$(blkid -l -o device -t "$device")"
 		if [ -z "$tmp" ]; then
 			if [ $UDEVRUNNING -eq 1 ]; then
@@ -575,7 +574,7 @@ ct_resolve_device() {
 	&& case $device in /dev/*) true ;; *) false ;; esac \
 	&& [ "$UDEVRUNNING" -eq 1 ]; then
 		msg "Waiting $seconds seconds for '$device'..."
-		until [ -e "$device" ] || [ $seconds -eq 0 ]; do
+		until [ -e "$device" ] || [ "$seconds" -eq 0 ]; do
 			sleep 1
 			seconds=$(( seconds - 1 ))
 		done
@@ -626,13 +625,13 @@ ct_parse_options() {
 			# set external variable
 			tmpfs="swap"
 			;;
-		luks|plain)
+		luks | plain)
 			warn "Ignoring option $key, LUKS volumes are automatically detected"
 			;;
-		noauto|%*)
+		noauto | %*)
 			:
 			;;
-		skip|precheck|check|checkargs|noearly|loud|keyscript)
+		skip | precheck | check | checkargs | noearly | loud | keyscript)
 			warn "Ignoring Debian specific option '$key'"
 			;;
 		tmp)
@@ -679,7 +678,6 @@ CRYPTTAB=/etc/crypttab
 OPTIONS=
 FILTER="!noauto"
 FORCE=0
-
 
 ######################################################################
 
