@@ -1,16 +1,11 @@
 include config.mk
 
-GREPOPT = --exclude-dir=.git --exclude-dir=.github -R .
-FINDOPT = -not \( -path "./.git*" -or -path ".*~" \)
-MAXLINE = 80
-
 deadlinks:
-	@echo "=======> Check for dead links"
-	@grep -Eiho "https?://[^\"\\'> ]+" ${GREPOPT} \
-		| xargs -P10 -I{}                     \
-		  curl -L -I -o /dev/null             \
-		  -sw "[%{http_code}] %{url}\n" '{}'  \
-		| grep -v '^\[200\]'                  \
+	@echo "=======> deadlinks"
+	@grep -EIihor "https?://[^\"\\'> ]+" --exclude-dir=.git*  \
+		| xargs -P10 -r -I{} curl -L -I -o/dev/null       \
+		  -sw "[%{http_code}] %{url}\n" '{}'              \
+		| grep -v '^\[200\]'                              \
 		| sort -u
 
 depscheck:
@@ -18,16 +13,15 @@ depscheck:
 	@which ${CRYPTSETUP_BIN} blkid mkswap
 
 podchecker:
-	@echo "=======> Check PODs for syntax errors"
+	@echo "=======> podchecker"
 	@podchecker *.pod
 
 shellcheck:
-	@echo "=======> Check shell scripts for syntax errors"
+	@echo "=======> shellcheck"
 	@shellcheck -s sh cryptmount.in
 
 longlines:
-	@echo "=======> Check for long lines (> ${MAXLINE})"
-	@find . -type f ${FINDOPT} -exec awk -v ML=${MAXLINE} \
-		'length > ML { print FILENAME ":" FNR " " $$0 }'  {} \;
+	@echo "=======> longlines"
+	@grep -PIrn '^.{81,}$$' --exclude-dir=.git* || :
 
 .PHONY: deadlinks depscheck podchecker shellcheck longlines
