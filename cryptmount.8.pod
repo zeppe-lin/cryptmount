@@ -8,13 +8,17 @@ cryptmount - parse F<crypttab> for use by B<cryptsetup>
 
 =head1 SYNOPSIS
 
-B<cryptmount> [I<options>] [B<-L>]
+=over
 
-B<cryptmount> [I<options>] B<-M> [I<name>|I<device>]
+=item B<cryptmount> [I<options>] [B<-L>]
 
-B<cryptmount> [I<options>] B<-M> I<name> I<device> [I<key>]
+=item B<cryptmount> [I<options>] B<-M> [I<name>|I<device>]
 
-B<cryptmount> [I<options>] B<-U> [I<name>[,...]]
+=item B<cryptmount> [I<options>] B<-M> I<name> I<device> [I<key>]
+
+=item B<cryptmount> [I<options>] B<-U> [I<name>[,...]]
+
+=back
 
 =head1 DESCRIPTION
 
