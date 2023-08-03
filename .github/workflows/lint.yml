@@ -13,14 +13,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Check PODs for errors
+      run: make -f Makefile.lint podchecker
+
     - name: Install shellcheck
       run: sudo apt-get install -y shellcheck
 
-    - name: Check PODs for errors
-      run: make -f utils.mk podchecker
-
-    # TODO
-    #- name: Check shell scripts for errors
-    #  run: shellcheck -s sh -x cryptmount.in
+    - name: Check shell scripts for errors
+      run: make -f Makefile.lint shellcheck
 
 # End of file.
