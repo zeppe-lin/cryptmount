@@ -1,3 +1,6 @@
+# Makefile.lint is the automated checking of cryptmount project
+# for various programmatic and stylistic errors.
+
 include config.mk
 
 all: deadlinks depscheck podchecker shellcheck longlines
