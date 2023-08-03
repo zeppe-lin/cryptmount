@@ -2,7 +2,8 @@
 
 include config.mk
 
-all: cryptmount cryptmount.8 crypttab.5
+manpages: cryptmount.8 crypttab.5
+all: cryptmount manpages
 
 %: %.pod
 	pod2man -r "${NAME} ${VERSION}" -c ' ' -n $(basename $@) \
