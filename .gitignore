@@ -3,8 +3,9 @@ cryptmount.8
 crypttab.5
 cryptmount
 
-# vim undo files
+# vim undo and swap files
 .*.un~
+*.swp
 
 # backup files
 *.bak
