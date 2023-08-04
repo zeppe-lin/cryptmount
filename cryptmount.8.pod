@@ -82,7 +82,7 @@ Dry run, useful with B<-v> to see how B<cryptsetup> will be called.
 =item B<-v>
 
 Increase verbosity.  This prints the commands which are being called
-(eg: B<cryptsetup>, B<mkswap>).
+(e.g.: B<cryptsetup>, B<mkswap>).
 
 =item B<-q>
 
