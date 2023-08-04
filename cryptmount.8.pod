@@ -55,7 +55,7 @@ manipulate which B<volumes> are unmapped).
 
 =over 8
 
-=item B<-c> I<FILE>
+=item B<-c> I<file>
 
 Override the default B<crypttab> location.
 
@@ -67,7 +67,7 @@ potential to accidentally lose data.  Because of this, B<cryptmount>
 performs a check with L<blkid(8)> to see if there is anything
 identifiable on I<DEVICE>.  Use B<-f> to bypass this check.
 
-=item B<-w> I<NUM>
+=item B<-w> I<num>
 
 Time (in seconds) to wait for I<DEVICE> if it is not already
 available.  If L<udevd(8)> is not running, then B<cryptmount> does not
@@ -96,17 +96,17 @@ Print version and exit.
 
 Print help and exit.
 
-=item B<-o> I<OPTS>
+=item B<-o> I<options>
 
 An options list with items such as B<swap>, B<cipher>, etc.  This may
 be given multiple times with a cumulative effect.  See L<crypttab(5)>
-for the full syntax I<OPTS>.
+for the full syntax I<options>.
 
-=item B<-O> I<FILTERS>
+=item B<-O> I<filters>
 
-Similar to I<OPTS>, this is used to manipulate which B<volumes> are
+Similar to I<options>, this is used to manipulate which B<volumes> are
 used with I<-L> and with I<-M/-U> without arguments.  If an option is
-present in I<FILTERS>, then the B<volume> in B<crypttab> must contain
+present in I<filters>, then the B<volume> in B<crypttab> must contain
 the option.  For example B<-O swap,size> matches all B<volumes> with
 the B<swap> option and any B<size>=size option; or B<-O
 swap,size=512> matches only those B<volumes> with the B<swap> option
