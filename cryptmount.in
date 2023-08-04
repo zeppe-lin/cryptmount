@@ -1,17 +1,16 @@
 #!/bin/sh
 # shellcheck disable=3043
 
-ct_print_version() {
-  echo "$PROGRAM @VERSION@"
-  exit 0
+print_version() {
+  echo "cryptmount @VERSION@"
 }
 
-ct_print_usage() {
+print_help() {
   cat <<EOF
-Usage: $PROGRAM [OPTION]... [-L]
-       $PROGRAM [OPTION]... -M [NAME|DEVICE]
-       $PROGRAM [OPTION]... -M  NAME DEVICE [KEY]
-       $PROGRAM [OPTION]... -U [NAME[,...]]
+Usage: cryptmount [OPTION]... [-L]
+       cryptmount [OPTION]...  -M [NAME|DEVICE]
+       cryptmount [OPTION]...  -M  NAME DEVICE [KEY]
+       cryptmount [OPTION]...  -U [NAME[,...]]
 List, map, and unmap encrypted volumes. The utility is a wrapper for
 cryptsetup which makes use of a crypttab file.
 
@@ -43,7 +42,6 @@ Options:
           line. an option may start with a ! to require that it must not
           be present. specifying this multiple times is cumulative
 EOF
-  exit "$1"
 }
 
 
@@ -121,7 +119,8 @@ ct_main() {
       action="$@"
     else
       error "only one of -L, -M, or -U may be given"
-      ct_print_usage 1
+      print_help
+      exit 1
     fi
   }
 
@@ -138,15 +137,17 @@ ct_main() {
     v) LOGLEVEL=$(( LOGLEVEL + 1 )) ;;
     o) OPTIONS="$OPTIONS,$OPTARG" ;;
     O) FILTER="$FILTER,$OPTARG" ;;
-    V) ct_print_version ;;
-    h) ct_print_usage 0 ;;
+    V) print_version ; exit 0 ;;
+    h) print_help    ; exit 0 ;;
     :)
       error "option requires an argument -- '$OPTARG'"
-      ct_print_usage 1
+      print_help
+      exit 1
       ;;
     ?)
       error "invalid option -- '$OPTARG'"
-      ct_print_usage 1
+      print_help
+      exit 1
       ;;
     esac
   done
@@ -250,7 +251,8 @@ ct_main_map() {
   else
 
     error "Too many options given for -M"
-    ct_print_usage 1
+    print_help
+    exit 1
 
   fi
 }
@@ -667,7 +669,6 @@ ct_parse_options() {
 # Global vars                                                        #
 ######################################################################
 
-readonly PROGRAM="${0##*/}"
 readonly SHORTOPTS="LMUc:fw:nqvVho:O:"
 
 UDEVRUNNING=0
