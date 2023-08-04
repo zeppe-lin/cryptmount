@@ -24,20 +24,20 @@ Actions:
           all volumes without the noauto option
 
 Options:
-  -c FILE set the crypttab location (default: /etc/crypttab)
+  -c file set the crypttab location (default: /etc/crypttab)
   -f      force destructive operations even when a block device appears to
           contain data
-  -w NUM  wait time (seconds) for a device if it is not already available
+  -w num  wait time (seconds) for a device if it is not already available
   -n      dry run
   -q      decrease verbosity
   -v      increase verbosity
   -V      print version and exit
   -h      print help and exit
-  -o OPT[,...]
+  -o options[,...]
           options which are appened to the options defined in crypttab
           (they take precedence). specifying this multiple times is
           cumulative
-  -O OPT[,...]
+  -O options[,...]
           filter used *only* when no volumes are given on the command
           line. an option may start with a ! to require that it must not
           be present. specifying this multiple times is cumulative
