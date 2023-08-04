@@ -8,10 +8,10 @@ ct_print_version() {
 
 ct_print_usage() {
 	cat <<EOF
-Usage: $PROGRAM [OPTIONS] [-L]
-       $PROGRAM [OPTIONS] -M [NAME|DEVICE]
-       $PROGRAM [OPTIONS] -M NAME DEVICE [KEY]
-       $PROGRAM [OPTIONS] -U [NAME[,...]]
+Usage: $PROGRAM [OPTION]... [-L]
+       $PROGRAM [OPTION]... -M [NAME|DEVICE]
+       $PROGRAM [OPTION]... -M  NAME DEVICE [KEY]
+       $PROGRAM [OPTION]... -U [NAME[,...]]
 List, map, and unmap encrypted volumes. The utility is a wrapper for
 cryptsetup which makes use of a crypttab file.
 
