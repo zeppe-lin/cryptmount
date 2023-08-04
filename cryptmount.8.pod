@@ -10,20 +10,20 @@ cryptmount - parse F<crypttab> for use by B<cryptsetup>
 
 =over
 
-=item B<cryptmount> [I<options>] [B<-L>]
+=item B<cryptmount> [I<OPTION>]... [B<-L>]
 
-=item B<cryptmount> [I<options>] B<-M> [I<name>|I<device>]
+=item B<cryptmount> [I<OPTION>]... B<-M> [I<NAME>|I<DEVICE>]
 
-=item B<cryptmount> [I<options>] B<-M> I<name> I<device> [I<key>]
+=item B<cryptmount> [I<OPTION>]... B<-M>  I<NAME> I<DEVICE> [I<KEY>]
 
-=item B<cryptmount> [I<options>] B<-U> [I<name>[,...]]
+=item B<cryptmount> [I<OPTION>]... B<-U> [I<NAME>[,...]]
 
 =back
 
 =head1 DESCRIPTION
 
 B<cryptmount> uses L<crypttab(5)> for calling L<cryptsetup(8)>; it
-can also be used to define a I<volume> on the command line without
+can also be used to define a B<volume> on the command line without
 B<crypttab>.
 
 =head1 ACTIONS
@@ -32,22 +32,22 @@ B<crypttab>.
 
 =item B<-L>
 
-List the I<names> (first column) of I<volumes> from B<crypttab>.  Use
-with B<-O> to manipulate which I<names> are listed.
+List the I<NAME>s (first column) of B<volumes> from B<crypttab>.  Use
+with B<-O> to manipulate which I<NAME>s are listed.
 
 =item B<-M>
 
-Perform a mapping.  The first form of this command finds a I<volume>
-from B<crypttab> either by its I<name> or I<device>, or if nothing is
-given then map all I<volumes> (use with B<-O> to manipulate which
-I<volumes> are mapped).  The second form defines a I<volume> entirely
+Perform a mapping.  The first form of this command finds a B<volume>
+from B<crypttab> either by its I<NAME> or I<DEVICE>, or if nothing is
+given then map all B<volumes> (use with B<-O> to manipulate which
+B<volumes> are mapped).  The second form defines a B<volume> entirely
 on the command line, B<crypttab> is not used.
 
 =item B<-U>
 
-Unmap I<volume(s)>.  If a list of I<names> is given, unmap them.
-Otherwise unmap all I<volumes> from B<crypttab> (with B<-O> to
-manipulate which I<volumes> are unmapped).
+Unmap B<volume(s)>.  If a list of I<NAME>s is given, unmap them.
+Otherwise unmap all B<volumes> from B<crypttab> (with B<-O> to
+manipulate which B<volumes> are unmapped).
 
 =back
 
@@ -55,7 +55,7 @@ manipulate which I<volumes> are unmapped).
 
 =over 8
 
-=item B<-c> I<file>
+=item B<-c> I<FILE>
 
 Override the default B<crypttab> location.
 
@@ -65,11 +65,11 @@ Force potentially destructive mappings.  For plain mappings (which
 are used with the B<swap> and B<tmp> options), there is a lot of
 potential to accidentally lose data.  Because of this, B<cryptmount>
 performs a check with L<blkid(8)> to see if there is anything
-identifiable on I<device>.  Use B<-f> to bypass this check.
+identifiable on I<DEVICE>.  Use B<-f> to bypass this check.
 
-=item B<-w> I<num>
+=item B<-w> I<NUM>
 
-Time (in seconds) to wait for I<device> if it is not already
+Time (in seconds) to wait for I<DEVICE> if it is not already
 available.  If L<udevd(8)> is not running, then B<cryptmount> does not
 bother to wait and this option is a no-op.  This also affects the
 wait time for I<keydevice> if your key is a block device or a file on
@@ -104,21 +104,21 @@ for the full syntax I<options>.
 
 =item B<-O> I<filters>
 
-Similar to I<options>, this is used to manipulate which I<volumes> are
+Similar to I<options>, this is used to manipulate which B<volumes> are
 used with I<-L> and with I<-M/-U> without arguments.  If an option is
-present in I<filters>, then the I<volume> in B<crypttab> must contain
-the option.  For example B<-O swap,size> matches all I<volumes> with
+present in I<filters>, then the B<volume> in B<crypttab> must contain
+the option.  For example B<-O swap,size> matches all B<volumes> with
 the B<swap> option and any B<size>=size option; or B<-O
-swap,size=512> matches only those I<volumes> with the B<swap> option
+swap,size=512> matches only those B<volumes> with the B<swap> option
 and specifically B<size=512>.
 
 A filter option may also be negated by prefixing it with a B<!>.  For
-example, B<-O swap,!size> includes all I<volumes> with the B<swap>
+example, B<-O swap,!size> includes all B<volumes> with the B<swap>
 option but B<without> the I<size> option.  There is a built-in filter
 B<!noauto>.
 
 Filters are especially useful with B<%>tag options.  For example, B<-O
-!%random> can be used to map all I<volumes> which don’t use
+!%random> can be used to map all B<volumes> which don’t use
 B</dev/urandom> for a password and B<-O %random> to map the remainder
 once your system’s random seed has been restored.
 
