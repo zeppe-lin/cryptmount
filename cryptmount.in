@@ -350,8 +350,7 @@ ct_check_filter() {
         opt="$(trim "$opt")"
         [ -z "$opt" ] && continue
 
-        if [ "$fltr" = "!$opt"       ] ||
-           [ "$fltr" = "!${opt%%=*}" ]; then
+        if [ "$fltr" = "!$opt" ] || [ "$fltr" = "!${opt%%=*}" ]; then
           return 1
         fi
       done
@@ -361,8 +360,7 @@ ct_check_filter() {
         opt="$(trim "$opt")"
         [ -z "$opt" ] && continue
 
-        if [ "$fltr" = "$opt"       ] ||
-           [ "$fltr" = "${opt%%=*}" ]; then
+        if [ "$fltr" = "$opt" ] || [ "$fltr" = "${opt%%=*}" ]; then
           continue 2
         fi
       done
@@ -424,15 +422,15 @@ ct_map() {
     key_fstype="${key%%:*}"
     key="${key#*:}"
     case "$key_fstype" in
-  *[!0-9]*)
-    : ;;
-  *)
-    warn "<dev>:<offset>:<length> is a deprecated key format. Please use"
-    warn " the keyfile-offset and keyfile-size options instead. This"
-    warn " format will *soon* be removed from cryptmount/crypttab!"
-    opts="$opts --keyfile-offset=$key_fstype --keyfile-size=$key"
-    key="$key_dev"
-    unset key_fstype key_dev
+    *[!0-9]*)
+      : ;;
+    *)
+      warn "<dev>:<offset>:<length> is a deprecated key format. Please use"
+      warn " the keyfile-offset and keyfile-size options instead. This"
+      warn " format will *soon* be removed from cryptmount/crypttab!"
+      opts="$opts --keyfile-offset=$key_fstype --keyfile-size=$key"
+      key="$key_dev"
+      unset key_fstype key_dev
     esac
     ;;
   *:*)
@@ -460,8 +458,7 @@ ct_map() {
 
         [ -n "$key_fstype" ] && key_fstype="-t $key_fstype"
 
-        # Intentional word splitting for
-        # $key_fstype.
+        # Intentional word splitting for $key_fstype.
         # shellcheck disable=2086
         if run mount -r $key_fstype "$key_dev" "$key_mntpnt"; then
           key="$key_mntpnt/$key"
@@ -485,8 +482,7 @@ ct_map() {
   elif [ -n "$key" ] && [ "$key" != "-" ]; then
 
     if ! key="$(ct_resolve_device "$key")"; then
-      error "key '$key' not found"
-      error " falling back on interactive password"
+      error "key '$key' not found, falling back on interactive password"
       unset key
     fi
 
@@ -512,8 +508,8 @@ ct_map() {
 
     info "device '$dev' assumed to be plain"
 
-    # cryptsetup 'create' can be destructive, don't do it
-    # if blkid can identify the device type
+    # cryptsetup 'create' can be destructive, don't do it if blkid can
+    # identify the device type
     if [ $FORCE -ne 1 ] && blkid -p "$dev" >/dev/null 2>&1; then
       error "Refusing to call 'cryptsetup create' on device that might"
       error " have data. If you are sure this is what you want, use"
@@ -601,7 +597,8 @@ ct_parse_options() {
     unset key val
     case "$opt" in
     "")
-      continue;;
+      continue
+      ;;
     -*)
       if [ $depr -eq 0 ]; then
         info "You are using a deprecated format for the options field. The entire"
@@ -619,7 +616,8 @@ ct_parse_options() {
       [ "$key" = "$val" ] && unset val
       ;;
     *)
-      key="$opt";;
+      key="$opt"
+      ;;
     esac
 
     case "$key" in
