@@ -96,17 +96,17 @@ Print version and exit.
 
 Print help and exit.
 
-=item B<-o> I<options>
+=item B<-o> I<OPTS>
 
 An options list with items such as B<swap>, B<cipher>, etc.  This may
 be given multiple times with a cumulative effect.  See L<crypttab(5)>
-for the full syntax I<options>.
+for the full syntax I<OPTS>.
 
-=item B<-O> I<filters>
+=item B<-O> I<FILTERS>
 
-Similar to I<options>, this is used to manipulate which B<volumes> are
+Similar to I<OPTS>, this is used to manipulate which B<volumes> are
 used with I<-L> and with I<-M/-U> without arguments.  If an option is
-present in I<filters>, then the B<volume> in B<crypttab> must contain
+present in I<FILTERS>, then the B<volume> in B<crypttab> must contain
 the option.  For example B<-O swap,size> matches all B<volumes> with
 the B<swap> option and any B<size>=size option; or B<-O
 swap,size=512> matches only those B<volumes> with the B<swap> option
