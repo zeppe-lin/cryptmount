@@ -1,52 +1,8 @@
 #!/bin/sh
 # shellcheck disable=3043
 
-print_version() {
-  echo "cryptmount @VERSION@"
-}
-
-print_help() {
-  cat <<EOF
-Usage: cryptmount [OPTION]... [-L]
-       cryptmount [OPTION]...  -M [NAME|DEVICE]
-       cryptmount [OPTION]...  -M  NAME DEVICE [KEY]
-       cryptmount [OPTION]...  -U [NAME[,...]]
-List, map, and unmap encrypted volumes. The utility is a wrapper for
-cryptsetup which makes use of a crypttab file.
-
-Actions:
-  -L      list the names of volumes defined in crypttab, this is
-          the default
-  -M      map a volume defined in crypttab or defined on the command
-          line. with no arguments, map all volumes without the noauto
-          option
-  -U      unmap volumes defined in crypttab. with no arguments, unmap
-          all volumes without the noauto option
-
-Options:
-  -c file set the crypttab location (default: /etc/crypttab)
-  -f      force destructive operations even when a block device appears to
-          contain data
-  -w num  wait time (seconds) for a device if it is not already available
-  -o options[,...]
-          options which are appened to the options defined in crypttab
-          (they take precedence). specifying this multiple times is
-          cumulative
-  -O options[,...]
-          filter used *only* when no volumes are given on the command
-          line. an option may start with a ! to require that it must not
-          be present. specifying this multiple times is cumulative
-  -n      dry run
-  -q      decrease verbosity
-  -v      increase verbosity
-  -V      print version and exit
-  -h      print help and exit
-EOF
-}
-
-
 ######################################################################
-# Utilities                                                          #
+# Notification helpers.                                              #
 ######################################################################
 
 error() {
@@ -69,6 +25,10 @@ msg() {
 info() {
   [ $LOGLEVEL -ge 2 ] && printf "I: %s\n" "$*" >&2
 }
+
+######################################################################
+# Utilities.                                                         #
+######################################################################
 
 run() {
   [ $LOGLEVEL -ge 2 ] && printf "R: %s\n" "$*" >&2
@@ -106,107 +66,9 @@ mkdtemp() {
   printf %s "$tmpdir"
 }
 
-
 ######################################################################
-# Main functions                                                     #
+# Main functions.                                                    #
 ######################################################################
-
-ct_main() {
-  local action
-
-  set_action() {
-    if [ -z $action ]; then
-      action="$@"
-    else
-      error "only one of -L, -M, or -U may be given"
-      print_help
-      exit 1
-    fi
-  }
-
-  while getopts ":$SHORTOPTS" opt; do
-    case $opt in
-    L) set_action list ;;
-    M) set_action map ;;
-    U) set_action unmap ;;
-    c) CRYPTTAB="$OPTARG" ;;
-    f) FORCE=1 ;;
-    w) WAITTIME=$(printf '%s\n', "$OPTARG" | sed 's/[^0-9]//g') ;;
-    n) DRYRUN=1 ;;
-    q) LOGLEVEL=$(( LOGLEVEL - 1 )) ;;
-    v) LOGLEVEL=$(( LOGLEVEL + 1 )) ;;
-    o) OPTIONS="$OPTIONS,$OPTARG" ;;
-    O) FILTER="$FILTER,$OPTARG" ;;
-    V) print_version ; exit 0 ;;
-    h) print_help    ; exit 0 ;;
-    :)
-      error "option requires an argument -- '$OPTARG'"
-      print_help
-      exit 1
-      ;;
-    ?)
-      error "invalid option -- '$OPTARG'"
-      print_help
-      exit 1
-      ;;
-    esac
-  done
-
-  shift $(( OPTIND - 1 ))
-
-  # Check for UDEV
-  if pidof udevd >/dev/null 2>&1; then
-    UDEVRUNNING=1
-    info "Detected udevd"
-  else
-    info "udevd not running, or unable to detect it: waiting for devices disabled"
-  fi
-
-  # Pre-parse OPTIONS, a little ugly, but it works
-  preparse() {
-    local args tmpfs
-    if ! ct_parse_options $OPTIONS; then
-      error "Invalid options string: $OPTIONS"
-      exit 1
-    fi
-    OPTIONS="$args"
-  }
-  preparse
-
-  if [ -z "$action" ] || [ "$action" = "list" ]; then
-
-    if [ $# -ne 0 ]; then
-      warn "With -L, volumes given on the command line have no effect"
-    fi
-
-    list_func() { printf "%s\n" "$1"; }
-    ct_read_crypttab list_func
-
-  elif [ "$action" = "unmap" ]; then
-
-    if [ $# -gt 0 ]; then
-      [ "$FILTER" != "!noauto" ] && \
-        info "Filters from -O are ignored in this mode"
-      unset FILTER
-    fi
-
-    ct_main_unmap "$@"
-
-  elif [ "$action" = "map" ]; then
-
-    if [ $# -ne 0 ]; then
-      [ "$FILTER" != "!noauto" ] && \
-        info "Filters from -O are ignored in this mode"
-      unset FILTER
-    fi
-
-    ct_main_map "$@"
-
-  else
-    error "Internal error: no action"
-    false
-  fi
-}
 
 ct_main_unmap() {
   if [ $# -eq 0 ]; then
@@ -257,9 +119,8 @@ ct_main_map() {
   fi
 }
 
-
 ######################################################################
-# Functions for iterating over crypttab                              #
+# Functions for iterating over crypttab.                             #
 ######################################################################
 
 ct_read_crypttab() {
@@ -373,9 +234,8 @@ ct_check_filter() {
   return 0
 }
 
-
 ######################################################################
-#  Mapping, unmapping, finding stuff                                 #
+#  Mapping, unmapping, finding stuff.                                #
 ######################################################################
 
 ct_unmap() {
@@ -662,13 +522,154 @@ ct_parse_options() {
   return 0
 }
 
+######################################################################
+# Command-line helpers.                                              #
+######################################################################
+
+print_help() {
+  cat <<EOF
+Usage: cryptmount [OPTION]... [-L]
+       cryptmount [OPTION]...  -M [NAME|DEVICE]
+       cryptmount [OPTION]...  -M  NAME DEVICE [KEY]
+       cryptmount [OPTION]...  -U [NAME[,...]]
+List, map, and unmap encrypted volumes. The utility is a wrapper for
+cryptsetup which makes use of a crypttab file.
+
+Actions:
+  -L      list the names of volumes defined in crypttab, this is
+          the default
+  -M      map a volume defined in crypttab or defined on the command
+          line. with no arguments, map all volumes without the noauto
+          option
+  -U      unmap volumes defined in crypttab. with no arguments, unmap
+          all volumes without the noauto option
+
+Options:
+  -c file set the crypttab location (default: /etc/crypttab)
+  -f      force destructive operations even when a block device appears to
+          contain data
+  -w num  wait time (seconds) for a device if it is not already available
+  -o options[,...]
+          options which are appened to the options defined in crypttab
+          (they take precedence). specifying this multiple times is
+          cumulative
+  -O options[,...]
+          filter used *only* when no volumes are given on the command
+          line. an option may start with a ! to require that it must not
+          be present. specifying this multiple times is cumulative
+  -n      dry run
+  -q      decrease verbosity
+  -v      increase verbosity
+  -V      print version and exit
+  -h      print help and exit
+EOF
+}
+
+print_version() {
+  echo "cryptmount @VERSION@"
+}
+
+ct_main() {
+  local action
+
+  set_action() {
+    if [ -z $action ]; then
+      action="$@"
+    else
+      error "only one of -L, -M, or -U may be given"
+      print_help
+      exit 1
+    fi
+  }
+
+  while getopts ":$SHORTOPTS" opt; do
+    case $opt in
+    L) set_action list ;;
+    M) set_action map ;;
+    U) set_action unmap ;;
+    c) CRYPTTAB="$OPTARG" ;;
+    f) FORCE=1 ;;
+    w) WAITTIME=$(printf '%s\n', "$OPTARG" | sed 's/[^0-9]//g') ;;
+    n) DRYRUN=1 ;;
+    q) LOGLEVEL=$(( LOGLEVEL - 1 )) ;;
+    v) LOGLEVEL=$(( LOGLEVEL + 1 )) ;;
+    o) OPTIONS="$OPTIONS,$OPTARG" ;;
+    O) FILTER="$FILTER,$OPTARG" ;;
+    V) print_version ; exit 0 ;;
+    h) print_help    ; exit 0 ;;
+    :)
+      error "option requires an argument -- '$OPTARG'"
+      print_help
+      exit 1
+      ;;
+    ?)
+      error "invalid option -- '$OPTARG'"
+      print_help
+      exit 1
+      ;;
+    esac
+  done
+
+  shift $(( OPTIND - 1 ))
+
+  # Check for UDEV
+  if pidof udevd >/dev/null 2>&1; then
+    UDEVRUNNING=1
+    info "Detected udevd"
+  else
+    info "udevd not running, or unable to detect it: waiting for devices disabled"
+  fi
+
+  # Pre-parse OPTIONS, a little ugly, but it works
+  preparse() {
+    local args tmpfs
+    if ! ct_parse_options $OPTIONS; then
+      error "Invalid options string: $OPTIONS"
+      exit 1
+    fi
+    OPTIONS="$args"
+  }
+  preparse
+
+  if [ -z "$action" ] || [ "$action" = "list" ]; then
+
+    if [ $# -ne 0 ]; then
+      warn "With -L, volumes given on the command line have no effect"
+    fi
+
+    list_func() { printf "%s\n" "$1"; }
+    ct_read_crypttab list_func
+
+  elif [ "$action" = "unmap" ]; then
+
+    if [ $# -gt 0 ]; then
+      [ "$FILTER" != "!noauto" ] && \
+        info "Filters from -O are ignored in this mode"
+      unset FILTER
+    fi
+
+    ct_main_unmap "$@"
+
+  elif [ "$action" = "map" ]; then
+
+    if [ $# -ne 0 ]; then
+      [ "$FILTER" != "!noauto" ] && \
+        info "Filters from -O are ignored in this mode"
+      unset FILTER
+    fi
+
+    ct_main_map "$@"
+
+  else
+    error "Internal error: no action"
+    false
+  fi
+}
 
 ######################################################################
-# Global vars                                                        #
-######################################################################
 
+# Globals.
 readonly SHORTOPTS="LMUc:fw:nqvVho:O:"
-
 UDEVRUNNING=0
 LOGLEVEL=1
 DRYRUN=0
