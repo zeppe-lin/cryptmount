@@ -8,12 +8,8 @@ This distribution is a fork of Sabotage-Linux' cryptmount as of commit
 is a patched version of Matthew's Monaco cryptmount.
 
 This distribution have the following little differences:
-- add the LICENSE file (the license was obtained from git history of
-  Matthew's initial Arch Linux package)
-- the man pages have been rewritten in POD format and adjusted for
-  Zeppe-Lin
-- added `CRYPTSETUP_BIN` make variable to specify custom cryptsetup(8)
-  location (`/sbin/cryptsetup.static` for example)
+- add LICENSE file (obtained from Matthew's initial Arch package)
+- man pages in POD format
 
 See git log for complete/further differences.
 
@@ -25,7 +21,8 @@ The original sources can be downloaded from:
 REQUIREMENTS
 ------------
 **Build time**:
-- POSIX sh(1p), make(1p) and "mandatory utilities"
+- POSIX sh(1p) and "mandatory utilities"
+- GNU make(1)
 - pod2man(1pm) to build man pages
 
 **Runtime**:
