@@ -5,25 +5,26 @@
 # Notification helpers.                                              #
 ######################################################################
 
-error() {
-  [ $LOGLEVEL -ge 0 ] && printf "E: %s\n" "$*" >&2
-}
-
-die() {
-  printf "E: %s\n" "$*" >&2
-  exit "${1:-1}"
-}
-
-warn() {
-  [ $LOGLEVEL -ge 1 ] && printf "W: %s\n" "$*" >&2
-}
-
 msg() {
-  [ $LOGLEVEL -ge 1 ] && printf "M: %s\n" "$*" >&2
+	[ $VERBOSE -ge 1 ] && printf "M: %s\n" "$*" >&2
 }
 
 info() {
-  [ $LOGLEVEL -ge 2 ] && printf "I: %s\n" "$*" >&2
+	[ $VERBOSE -ge 2 ] && printf "I: %s\n" "$*" >&2
+}
+
+warn() {
+	[ $VERBOSE -ge 1 ] && printf "W: %s\n" "$*" >&2
+}
+
+error() {
+	[ $VERBOSE -ge 0 ] && printf "E: %s\n" "$*" 1>&2
+}
+
+# XXX unused? subsection change?
+die() {
+	printf "E: %s\n" "$*" 1>&2
+	exit "${1:-1}"
 }
 
 ######################################################################
@@ -31,39 +32,39 @@ info() {
 ######################################################################
 
 run() {
-  [ $LOGLEVEL -ge 2 ] && printf "R: %s\n" "$*" >&2
-  [ $DRYRUN   -eq 0 ] && "$@"
+	[ $VERBOSE -ge 2 ] && printf "R: %s\n" "$*" >&2
+	[ $DRYRUN  -eq 0 ] && "$@"
 }
 
 trim() {
-  IFS="$(printf ' \n\t')" printf "%s" $*
+	IFS="$(printf ' \n\t')" printf "%s" $*
 }
 
 get_mount() {
-  findmnt -cfmnoTARGET "$1"
+	findmnt -cfmnoTARGET "$1"
 }
 
 # Make temporary directory.  Use it instead of "/usr/bin/mktemp -d",
 # since cryptmount is used in /etc/rc and must not require /usr/*
 # utilities.
 mkdtemp() {
-  # initial entropy, the more we can get the better
-  local random=$(( $(date +%S%M%H%j) + $$ ))
-  local tmpdir
+	# initial entropy, the more we can get the better
+	local random=$(( $(date +%S%M%H%j) + $$ ))
+	local tmpdir=
 
-  while
-    # C standard rand(), without truncation
-    # cf. https://en.wikipedia.org/wiki/Linear_congruential_generator
-    random=$(( (1103515245*random + 12345) % 2147483648 ))
+	while
+		# C standard rand(), without truncation
+		# cf. https://en.wikipedia.org/wiki/Linear_congruential_generator
+		random=$(( (1103515245*random + 12345) % 2147483648 ))
 
-    # optionally, shorten name a bit
-    tmpdir=$( printf "/tmp/tmp.%x" $random )
+		# optionally, shorten name a bit
+		tmpdir=$( printf "/tmp/tmp.%x" $random )
 
-    # loop until new directory is created
-    ! mkdir $tmpdir 2>&-
-  do : ; done
+		# loop until new directory is created
+		! mkdir "$tmpdir" 2>&-
+	do : ; done
 
-  printf %s "$tmpdir"
+	printf %s "$tmpdir"
 }
 
 ######################################################################
@@ -71,52 +72,44 @@ mkdtemp() {
 ######################################################################
 
 ct_main_unmap() {
-  if [ $# -eq 0 ]; then
-    ct_read_crypttab ct_unmap
-  else
-    local vol ret=0
-    for vol in "$@"; do
-      ct_unmap "$vol" || ret=$(( ret + 1 ))
-    done
-    return $ret
-  fi
+	if [ $# -eq 0 ]; then
+		ct_read_crypttab ct_unmap
+	else
+		local vol ret=0
+		for vol in "$@"; do
+			ct_unmap "$vol" || ret=$(( ret + 1 ))
+		done
+		return $ret
+	fi
 }
 
 ct_main_map() {
-  if [ $# -eq 0 ]; then
+	if [ $# -eq 0 ]; then
+		ct_read_crypttab ct_map
+	elif [ $# -eq 1 ]; then
+		local vol _tmp="$1"
 
-    ct_read_crypttab ct_map
+		find_func() {
+			if [ "$1" = "$_tmp" ] || [ "$2" = "$_tmp" ]; then
+				printf "%s" "$*"
+			else
+				false
+			fi
+		}
 
-  elif [ $# -eq 1 ]; then
-
-    local vol _tmp="$1"
-
-    find_func() {
-      if [ "$1" = "$_tmp" ] || [ "$2" = "$_tmp" ]; then
-        printf "%s" "$*"
-      else
-        false
-      fi
-    }
-
-    if vol="$(ct_read_crypttab -1 find_func)"; then
-      ct_map $vol
-    else
-      error "Unable to find '$_tmp' in '$CRYPTTAB'"
-      false
-    fi
-
-  elif [ $# -le 3 ]; then
-
-    ct_map "$@"
-
-  else
-
-    error "Too many options given for -M"
-    print_help
-    exit 1
-
-  fi
+		if vol="$(ct_read_crypttab -1 find_func)"; then
+			ct_map $vol
+		else
+			error "Unable to find '$_tmp' in '$CRYPTTAB'"
+			false
+		fi
+	elif [ $# -le 3 ]; then
+		ct_map "$@"
+	else
+		error "Too many options given for -M"
+		print_help
+		exit 1
+	fi
 }
 
 ######################################################################
@@ -124,114 +117,113 @@ ct_main_map() {
 ######################################################################
 
 ct_read_crypttab() {
-  if [ ! -f "$CRYPTTAB" ] || [ ! -r "$CRYPTTAB" ]; then
-    error "cannot read $CRYPTTAB"
-    return 1
-  fi
+	if [ ! -f "$CRYPTTAB" ] || [ ! -r "$CRYPTTAB" ]; then
+		error "cannot read $CRYPTTAB"
+		return 1
+	fi
 
-  local func="$@" line lineno=0 name dev key options ret=0 adhoc=0
+	local func="$@" line lineno=0 name dev key options ret=0 adhoc=0
 
-  if [ "$1" = "-1" ]; then
-    adhoc=1
-    shift
-    func="$@"
-  fi
+	if [ "$1" = "-1" ]; then
+		adhoc=1
+		shift
+		func="$@"
+	fi
 
-  while read -r name dev key options <&3; do
-    lineno=$(( lineno + 1 ))
+	while read -r name dev key options <&3; do
+		lineno=$(( lineno + 1 ))
 
-    # skip comments and empty lines
-    case $name in \#* | "" ) continue ;; esac
+		# skip comments and empty lines
+		case $name in \#* | "" ) continue ;; esac
 
-    # unescape devname and keyname
-    name=$(printf '%b' "$name")
-    dev=$(printf '%b' "$dev")
-    key=$(printf '%b' "$key")
+		# unescape devname and keyname
+		name=$(printf '%b' "$name")
+		dev=$(printf '%b' "$dev")
+		key=$(printf '%b' "$key")
 
-    if [ -z "$name" ]; then
-      warn "$CRYPTTAB:$lineno: the name (first column) cannot be blank"
-      continue
-    elif [ -z "$dev" ]; then
-      warn "$CRYPTTAB:$lineno: the device (second column) cannot be blank"
-      continue
-    fi
+		if [ -z "$name" ]; then
+			warn "$CRYPTTAB:$lineno: the name (first column) cannot be blank"
+			continue
+		elif [ -z "$dev" ]; then
+			warn "$CRYPTTAB:$lineno: the device (second column) cannot be blank"
+			continue
+		fi
 
-    case $key in
-    - | none | "")
-      key=-
-      ;;
-    /dev/random | /dev/urandom | /dev/hw_random)
-      options="$options,%random"
-      ;;
-    ASK)
-      info "$CRYPTTAB:$lineno: ASK is a deprecated key, please use '-' or 'none'"
-      key=-
-      ;;
-    SWAP)
-      info "$CRYPTTAB:$lineno: SWAP is a deprecated key, please use '/dev/urandom' and the 'swap' option"
-      key="/dev/urandom"
-      options="$options,swap,%random"
-      ;;
-    /* | UUID=* | PARTUUID=* | LABEL=*)
-      :
-      ;;
-    *)
-      warn "$CRYPTTAB:$lineno: plain text keys are not supported"
-      key=-
-      ;;
-    esac
+		case $key in
+		- | none | "")
+			key=-
+			;;
+		/dev/random | /dev/urandom | /dev/hw_random)
+			options="$options,%random"
+			;;
+		ASK)
+			info "$CRYPTTAB:$lineno: ASK is a deprecated key, please use '-' or 'none'"
+			key=-
+			;;
+		SWAP)
+			info "$CRYPTTAB:$lineno: SWAP is a deprecated key, please use '/dev/urandom' and the 'swap' option"
+			key="/dev/urandom"
+			options="$options,swap,%random"
+			;;
+		/* | UUID=* | PARTUUID=* | LABEL=*)
+			:
+			;;
+		*)
+			warn "$CRYPTTAB:$lineno: plain text keys are not supported"
+			key=-
+			;;
+		esac
 
-    if ct_check_filter $options; then
-      if ! $func "$name" "$dev" "$key" $options; then
-        ret=$(( ret + 1 ))
-      elif [ $adhoc -eq 1 ]; then
-        ret=0
-        break
-      fi
-    fi
+		if ct_check_filter $options; then
+			if ! $func "$name" "$dev" "$key" $options; then
+				ret=$(( ret + 1 ))
+			elif [ $adhoc -eq 1 ]; then
+				ret=0
+				break
+			fi
+		fi
 
-  done 3< "$CRYPTTAB"
+	done 3< "$CRYPTTAB"
 
-  return $ret
+	return $ret
 }
 
 ct_check_filter() {
-  local IFS fltr opt
-  IFS="$(printf ',')"
+	local IFS fltr opt
+	IFS="$(printf ',')"
 
-  for fltr in $FILTER; do
-    fltr="$(trim "$fltr")"
+	for fltr in $FILTER; do
+		fltr="$(trim "$fltr")"
 
-    case $fltr in
-    "")
-      continue
-      ;;
-    \!*)
-      for opt in $*; do
-        opt="$(trim "$opt")"
-        [ -z "$opt" ] && continue
+		case $fltr in
+		"")
+			continue
+			;;
+		\!*)
+			for opt in $*; do
+				opt="$(trim "$opt")"
+				[ -z "$opt" ] && continue
 
-        if [ "$fltr" = "!$opt" ] || [ "$fltr" = "!${opt%%=*}" ]; then
-          return 1
-        fi
-      done
-      ;;
-    *)
-      for opt in $*; do
-        opt="$(trim "$opt")"
-        [ -z "$opt" ] && continue
+				if [ "$fltr" = "!$opt" ] || [ "$fltr" = "!${opt%%=*}" ]; then
+					return 1
+				fi
+			done
+			;;
+		*)
+			for opt in $*; do
+				opt="$(trim "$opt")"
+				[ -z "$opt" ] && continue
 
-        if [ "$fltr" = "$opt" ] || [ "$fltr" = "${opt%%=*}" ]; then
-          continue 2
-        fi
-      done
+				if [ "$fltr" = "$opt" ] || [ "$fltr" = "${opt%%=*}" ]; then
+					continue 2
+				fi
+			done
+			return 1
+			;;
+		esac
+	done
 
-      return 1
-      ;;
-    esac
-  done
-
-  return 0
+	return 0
 }
 
 ######################################################################
@@ -239,287 +231,283 @@ ct_check_filter() {
 ######################################################################
 
 ct_unmap() {
-  # name: $1
+	# name: $1
 
-  if [ ! -e "/dev/mapper/$1" ]; then
-    warn "Volume was not mapped (no '/dev/mapper/$1')"
-  elif run @CRYPTSETUP_BIN@ remove "$1"; then
-    info "$1 unmapped"
-  else
-    error "failed to unmap $1"
-    false
-  fi
+	if [ ! -e "/dev/mapper/$1" ]; then
+		warn "Volume was not mapped (no '/dev/mapper/$1')"
+	elif run cryptsetup remove "$1"; then
+		info "$1 unmapped"
+	else
+		error "failed to unmap $1"
+		false
+	fi
 }
 
 ct_map() {
-  local name="$1" dev="$2" key="$3" args="" tmpfs
-  local key_dev="" key_fstype="" key_mntpnt="" key_dev_umount=0
-  shift 3
+	local name="$1" dev="$2" key="$3" args="" tmpfs
+	local key_dev="" key_fstype="" key_mntpnt="" key_dev_umount=0
+	shift 3
 
-  if [ -e "/dev/mapper/$name" ]; then
-    error "Volume is already mapped ('/dev/mapper/$name' exists')"
-    return 1
-  fi
+	if [ -e "/dev/mapper/$name" ]; then
+		error "Volume is already mapped ('/dev/mapper/$name' exists')"
+		return 1
+	fi
 
-  # this function sets the args and tmpfs variables
-  if ! ct_parse_options "$@"; then
-    error "Unable to parse options"
-    return 1
-  fi
-  args="$args $OPTIONS"
+	# this function sets the args and tmpfs variables
+	if ! ct_parse_options "$@"; then
+		error "Unable to parse options"
+		return 1
+	fi
+	args="$args $OPTIONS"
 
-  # resolve the encrypted device, can't do much without this
-  if ! dev="$(ct_resolve_device "$dev")"; then
-    error "device '$dev' not found"
-    return 1
-  fi
+	# resolve the encrypted device, can't do much without this
+	if ! dev="$(ct_resolve_device "$dev")"; then
+		error "device '$dev' not found"
+		return 1
+	fi
 
-  # parse various key formats
-  case "$key" in
-  *:*:*)
-    key_dev="${key%%:*}"
-    key="${key#*:}"
-    key_fstype="${key%%:*}"
-    key="${key#*:}"
-    case "$key_fstype" in
-    *[!0-9]*)
-      : ;;
-    *)
-      warn "<dev>:<offset>:<length> is a deprecated key format. Please use"
-      warn " the keyfile-offset and keyfile-size options instead. This"
-      warn " format will *soon* be removed from cryptmount/crypttab!"
-      opts="$opts --keyfile-offset=$key_fstype --keyfile-size=$key"
-      key="$key_dev"
-      unset key_fstype key_dev
-    esac
-    ;;
-  *:*)
-    key_dev="${key%%:*}"
-    key="${key#*:}"
-    ;;
-  "" | -)
-    unset key_dev key
-    ;;
-  *)
-    unset key_dev
-    ;;
-  esac
+	# parse various key formats
+	case "$key" in
+	*:*:*)
+		key_dev="${key%%:*}"
+		key="${key#*:}"
+		key_fstype="${key%%:*}"
+		key="${key#*:}"
+		case "$key_fstype" in
+		*[!0-9]*)
+			: ;;
+		*)
+			warn "<dev>:<offset>:<length> is a deprecated key format. Please use"
+			warn " the keyfile-offset and keyfile-size options instead. This"
+			warn " format will *soon* be removed from cryptmount/crypttab!"
+			opts="$opts --keyfile-offset=$key_fstype --keyfile-size=$key"
+			key="$key_dev"
+			unset key_fstype key_dev
+		esac
+		;;
+	*:*)
+		key_dev="${key%%:*}"
+		key="${key#*:}"
+		;;
+	"" | -)
+		unset key_dev key
+		;;
+	*)
+		unset key_dev
+		;;
+	esac
 
-  # resolve any needed key device and mount if necessary
-  if [ "$key_dev" ]; then
+	# resolve any needed key device and mount if necessary
+	if [ "$key_dev" ]; then
 
-    if key_dev="$(ct_resolve_device "$key_dev")"; then
+		if key_dev="$(ct_resolve_device "$key_dev")"; then
 
-      if key_mntpnt="$(get_mount "$key_dev")"; then
+			if key_mntpnt="$(get_mount "$key_dev")"; then
 
-        key="$key_mntpnt/$key"
+				key="$key_mntpnt/$key"
 
-      elif key_mntpnt="$(mkdtemp)"; then
+			elif key_mntpnt="$(mkdtemp)"; then
 
-        [ -n "$key_fstype" ] && key_fstype="-t $key_fstype"
+				[ -n "$key_fstype" ] && key_fstype="-t $key_fstype"
 
-        # Intentional word splitting for $key_fstype.
-        # shellcheck disable=2086
-        if run mount -r $key_fstype "$key_dev" "$key_mntpnt"; then
-          key="$key_mntpnt/$key"
-          key_dev_umount=1
-        else
-          error "unable to mount key device '$key_dev',"
-          error " falling back on interactive password"
-          unset key
-        fi
-      else
-        error "unable to find or create mountpoint for key device,"
-        error " falling back on interactive password"
-        unset key
-      fi
-    else
-      error "key device '$key_dev' not found"
-      error " falling back on interactive password"
-      unset key
-    fi
+				# Intentional word splitting for $key_fstype.
+				# shellcheck disable=2086
+				if run mount -r $key_fstype "$key_dev" "$key_mntpnt"; then
+					key="$key_mntpnt/$key"
+					key_dev_umount=1
+				else
+					error "unable to mount key device '$key_dev',"
+					error " falling back on interactive password"
+					unset key
+				fi
+			else
+				error "unable to find or create mountpoint for key device,"
+				error " falling back on interactive password"
+				unset key
+			fi
+		else
+			error "key device '$key_dev' not found"
+			error " falling back on interactive password"
+			unset key
+		fi
 
-  elif [ -n "$key" ] && [ "$key" != "-" ]; then
+	elif [ -n "$key" ] && [ "$key" != "-" ]; then
+		if ! key="$(ct_resolve_device "$key")"; then
+			error "key '$key' not found, falling back on interactive password"
+			unset key
+		fi
+	fi
 
-    if ! key="$(ct_resolve_device "$key")"; then
-      error "key '$key' not found, falling back on interactive password"
-      unset key
-    fi
+	[ "$key" ] && key=--key-file="$key"
 
-  fi
+	local ret=0
 
-  [ "$key" ] && key=--key-file="$key"
+	# the main event, run cryptsetup (and mkswap, mkfs if necessary)
+	if cryptsetup isLuks "$dev"; then
+		info "device '$dev' detected as LUKS"
 
-  local ret=0
+		if run cryptsetup luksOpen $key $args "$dev" "$name"; then
+			info "successfully mapped '$dev' to '/dev/mapper/$name'"
+		else
+			error "unable to map '$dev' to '/dev/mapper/$name'"
+			ret=1
+		fi
+	else
+		info "device '$dev' assumed to be plain"
 
-  # the main event, run cryptsetup (and mkswap, mkfs if necessary)
-  if @CRYPTSETUP_BIN@ isLuks "$dev"; then
+		# cryptsetup 'create' can be destructive, don't do it if blkid can
+		# identify the device type
+		if [ $FORCE -ne 1 ] && blkid -p "$dev" >/dev/null 2>&1; then
+			error "Refusing to call 'cryptsetup create' on device that might"
+			error " have data. If you are sure this is what you want, use"
+			error " the -f option"
+			ret=1
 
-    info "device '$dev' detected as LUKS"
+		elif run cryptsetup create $key $args "$name" "$dev"; then
+			info "successfully mapped '$dev' to '/dev/mapper/$name'"
 
-    if run @CRYPTSETUP_BIN@ luksOpen $key $args "$dev" "$name"; then
-      info "successfully mapped '$dev' to '/dev/mapper/$name'"
-    else
-      error "unable to map '$dev' to '/dev/mapper/$name'"
-      ret=1
-    fi
+			if [ "$tmpfs" = "swap" ]; then
+				if run mkswap -f -L "$name" "/dev/mapper/$name"; then
+					info "mkswap successful on '/dev/mapper/$name'"
+				else
+					error "mkswap failed for '/dev/mapper/$name'"
+					ret=1
+				fi
+			elif [ "$tmpfs" ]; then
+				if run mkfs -t "$tmpfs" "/dev/mapper/$name"; then
+					info "mkfs successful on '/dev/mapper/$name'"
+				else
+					error "mkfs failed for '/dev/mapper/$name'"
+					ret=1
+				fi
+			fi
+		else
+			error "unable to map '$dev' to '/dev/maper/name/$name'"
+			ret=1
+		fi
+	fi
 
-  else
+	# clean up after ourselves
+	if [ $key_dev_umount -eq 1 ]; then
+		if ! run umount "$key_dev"; then
+			warn "unable to mount key device '$key_dev'"
+		else
+			run rmdir "$key_mntpnt"
+		fi
+	fi
 
-    info "device '$dev' assumed to be plain"
-
-    # cryptsetup 'create' can be destructive, don't do it if blkid can
-    # identify the device type
-    if [ $FORCE -ne 1 ] && blkid -p "$dev" >/dev/null 2>&1; then
-      error "Refusing to call 'cryptsetup create' on device that might"
-      error " have data. If you are sure this is what you want, use"
-      error " the -f option"
-      ret=1
-    elif run @CRYPTSETUP_BIN@ create $key $args "$name" "$dev"; then
-      info "successfully mapped '$dev' to '/dev/mapper/$name'"
-      if [ "$tmpfs" = "swap" ]; then
-        if run mkswap -f -L "$name" "/dev/mapper/$name"; then
-          info "mkswap successful on '/dev/mapper/$name'"
-        else
-          error "mkswap failed for '/dev/mapper/$name'"
-          ret=1
-        fi
-      elif [ "$tmpfs" ]; then
-        if run mkfs -t "$tmpfs" "/dev/mapper/$name"; then
-          info "mkfs successful on '/dev/mapper/$name'"
-        else
-          error "mkfs failed for '/dev/mapper/$name'"
-          ret=1
-        fi
-      fi
-    else
-      error "unable to map '$dev' to '/dev/maper/name/$name'"
-      ret=1
-    fi
-
-  fi
-
-  # clean up after ourselves
-  if [ $key_dev_umount -eq 1 ]; then
-    if ! run umount "$key_dev"; then
-      warn "unable to mount key device '$key_dev'"
-    else
-      run rmdir "$key_mntpnt"
-    fi
-  fi
-
-  return $ret
+	return $ret
 }
 
 ct_resolve_device() {
-  local tmp="" device="$1" seconds="$WAITTIME" tag tagval
+	local tmp="" device="$1" seconds="$WAITTIME" tag tagval
 
-  case "$device" in
-  UUID=* | PARTUUID=* | LABEL=*)
-    tmp="$(blkid -l -o device -t "$device")"
-    if [ -z "$tmp" ]; then
-      if [ $UDEVRUNNING -eq 1 ]; then
-        tag="$(echo "${device%%=*}" | sed 's/./\L&/g')"
-        tagval="${device#*=}"
-        device="/dev/disk/by-$tag/$tagval"
-      fi
-    else
-      device="$tmp"
-    fi
-  esac
+	case "$device" in
+	UUID=* | PARTUUID=* | LABEL=*)
+		tmp="$(blkid -l -o device -t "$device")"
+		if [ -z "$tmp" ]; then
+			if [ $UDEVRUNNING -eq 1 ]; then
+				tag="$(echo "${device%%=*}" | sed 's/./\L&/g')"
+				tagval="${device#*=}"
+				device="/dev/disk/by-$tag/$tagval"
+			fi
+		else
+			device="$tmp"
+		fi
+	esac
 
-  if [ ! -e "$device" ] \
-  && case $device in /dev/*) true ;; *) false ;; esac \
-  && [ "$UDEVRUNNING" -eq 1 ]; then
-    msg "Waiting $seconds seconds for '$device'..."
-    until [ -e "$device" ] || [ "$seconds" -eq 0 ]; do
-      sleep 1
-      seconds=$(( seconds - 1 ))
-    done
-  fi
+	if [ ! -e "$device" ] \
+	&& case $device in /dev/*) true ;; *) false ;; esac \
+	&& [ "$UDEVRUNNING" -eq 1 ]; then
+		msg "Waiting $seconds seconds for '$device'..."
 
-  printf "%s" "$device"
+		until [ -e "$device" ] || [ "$seconds" -eq 0 ]; do
+			sleep 1
+			seconds=$(( seconds - 1 ))
+		done
+	fi
 
-  if [ -e "$device" ]; then
-    info "resolve: found '$device'"
-  else
-    error "resolve: unable to find '$device'"
-    return 1
-  fi
+	printf "%s" "$device"
+
+	if [ -e "$device" ]; then
+		info "resolve: found '$device'"
+	else
+		error "resolve: unable to find '$device'"
+		return 1
+	fi
 }
 
 ct_parse_options() {
-  local IFS=',' optlst="$*" opt key val depr=0
+	local IFS=',' optlst="$*" opt key val depr=0
 
-  for opt in $optlst; do
+	for opt in $optlst; do
 
-    # separate key and value
-    unset key val
-    case "$opt" in
-    "")
-      continue
-      ;;
-    -*)
-      if [ $depr -eq 0 ]; then
-        info "You are using a deprecated format for the options field. The entire"
-        info " field will be passed directly to cryptsetup. Please use the more"
-        info " standardized comma-deliminated options list instead. This format"
-        info " will be removed in a future version of cryptmount/crypttab!"
-        depr=1
-      fi
-      args="$args $opt"
-      continue
-      ;;
-    *=*)
-      key="${opt%%=*}"
-      val="${opt#*=}"
-      [ "$key" = "$val" ] && unset val
-      ;;
-    *)
-      key="$opt"
-      ;;
-    esac
+		# separate key and value
+		unset key val
+		case "$opt" in
+		"")
+			continue
+			;;
+		-*)
+			if [ $depr -eq 0 ]; then
+				info "You are using a deprecated format for the options field. The entire"
+				info " field will be passed directly to cryptsetup. Please use the more"
+				info " standardized comma-deliminated options list instead. This format"
+				info " will be removed in a future version of cryptmount/crypttab!"
+				depr=1
+			fi
+			args="$args $opt"
+			continue
+			;;
+		*=*)
+			key="${opt%%=*}"
+			val="${opt#*=}"
+			[ "$key" = "$val" ] && unset val
+			;;
+		*)
+			key="$opt"
+			;;
+		esac
 
-    case "$key" in
-    swap)
-      # set external variable
-      tmpfs="swap"
-      ;;
-    luks | plain)
-      warn "Ignoring option $key, LUKS volumes are automatically detected"
-      ;;
-    noauto | %*)
-      :
-      ;;
-    skip | precheck | check | checkargs | noearly | loud | keyscript)
-      warn "Ignoring Debian specific option '$key'"
-      ;;
-    tmp)
-      # set an external variable
-      [ -z "$val" ] && msg "Defaulting tmp to ext4"
-      tmpfs="${val:-ext4}"
-      ;;
-    size)
-      args="$args --key-size $val"
-      ;;
-    device-size)
-      args="$args --size $val"
-      ;;
-    none)
-      args=
-      ;;
-    *)
-      if [ ${#key} -eq 1 ]; then
-        args="$args -$key $val"
-      else
-        args="$args --$key $val"
-      fi
-      ;;
-    esac
+		case "$key" in
+		swap)
+			# set external variable
+			tmpfs="swap"
+			;;
+		luks | plain)
+			warn "Ignoring option $key, LUKS volumes are automatically detected"
+			;;
+		noauto | %*)
+			:
+			;;
+		skip | precheck | check | checkargs | noearly | loud | keyscript)
+			warn "Ignoring Debian specific option '$key'"
+			;;
+		tmp)
+			# set an external variable
+			[ -z "$val" ] && msg "Defaulting tmp to ext4"
+			tmpfs="${val:-ext4}"
+			;;
+		size)
+			args="$args --key-size $val"
+			;;
+		device-size)
+			args="$args --size $val"
+			;;
+		none)
+			args=
+			;;
+		*)
+			if [ ${#key} -eq 1 ]; then
+				args="$args -$key $val"
+			else
+				args="$args --$key $val"
+			fi
+			;;
+		esac
+	done
 
-  done
-
-  return 0
+	return 0
 }
 
 ######################################################################
@@ -527,7 +515,7 @@ ct_parse_options() {
 ######################################################################
 
 print_help() {
-  cat <<EOF
+	cat <<EOF
 Usage: cryptmount [OPTION]... [-L]
        cryptmount [OPTION]...  -M [NAME|DEVICE]
        cryptmount [OPTION]...  -M  NAME DEVICE [KEY]
@@ -566,104 +554,105 @@ EOF
 }
 
 print_version() {
-  echo "cryptmount @VERSION@"
+	echo "cryptmount @VERSION@"
 }
 
 ct_main() {
-  local action
+	local action
 
-  set_action() {
-    if [ -z $action ]; then
-      action="$@"
-    else
-      error "only one of -L, -M, or -U may be given"
-      print_help
-      exit 1
-    fi
-  }
+	set_action() {
+		if [ -z $action ]; then
+			action="$@"
+		else
+			error "only one of -L, -M, or -U may be given"
+			print_help
+			exit 1
+		fi
+	}
 
-  while getopts ":$SHORTOPTS" opt; do
-    case $opt in
-    L) set_action list ;;
-    M) set_action map ;;
-    U) set_action unmap ;;
-    c) CRYPTTAB="$OPTARG" ;;
-    f) FORCE=1 ;;
-    w) WAITTIME=$(printf '%s\n', "$OPTARG" | sed 's/[^0-9]//g') ;;
-    n) DRYRUN=1 ;;
-    q) LOGLEVEL=$(( LOGLEVEL - 1 )) ;;
-    v) LOGLEVEL=$(( LOGLEVEL + 1 )) ;;
-    o) OPTIONS="$OPTIONS,$OPTARG" ;;
-    O) FILTER="$FILTER,$OPTARG" ;;
-    V) print_version ; exit 0 ;;
-    h) print_help    ; exit 0 ;;
-    :)
-      error "option requires an argument -- '$OPTARG'"
-      print_help
-      exit 1
-      ;;
-    ?)
-      error "invalid option -- '$OPTARG'"
-      print_help
-      exit 1
-      ;;
-    esac
-  done
+	while getopts ":$SHORTOPTS" opt; do
+		case $opt in
+		L) set_action list ;;
+		M) set_action map ;;
+		U) set_action unmap ;;
+		c) CRYPTTAB="$OPTARG" ;;
+		f) FORCE=1 ;;
+		w) WAITTIME=$(printf '%s\n', "$OPTARG" | sed 's/[^0-9]//g') ;;
+		n) DRYRUN=1 ;;
+		q) VERBOSE=$(( VERBOSE - 1 )) ;;
+		v) VERBOSE=$(( VERBOSE + 1 )) ;;
+		o) OPTIONS="$OPTIONS,$OPTARG" ;;
+		O) FILTER="$FILTER,$OPTARG" ;;
+		V) print_version ; exit 0 ;;
+		h) print_help    ; exit 0 ;;
+		:)
+			error "option requires an argument -- '$OPTARG'"
+			print_help
+			exit 1
+			;;
+		?)
+			error "invalid option -- '$OPTARG'"
+			print_help
+			exit 1
+			;;
+		esac
+	done
+	shift $(( OPTIND - 1 ))
 
-  shift $(( OPTIND - 1 ))
+	# Check for UDEV
+	if pidof udevd >/dev/null 2>&1; then
+		UDEVRUNNING=1
+		info "Detected udevd"
+	else
+		info "udevd not running, or unable to detect it: waiting for devices disabled"
+	fi
 
-  # Check for UDEV
-  if pidof udevd >/dev/null 2>&1; then
-    UDEVRUNNING=1
-    info "Detected udevd"
-  else
-    info "udevd not running, or unable to detect it: waiting for devices disabled"
-  fi
+	# Pre-parse OPTIONS, a little ugly, but it works
+	preparse() {
+		local args tmpfs
+		if ! ct_parse_options $OPTIONS; then
+			error "Invalid options string: $OPTIONS"
+			exit 1
+		fi
+		OPTIONS="$args"
+	}
+	preparse
 
-  # Pre-parse OPTIONS, a little ugly, but it works
-  preparse() {
-    local args tmpfs
-    if ! ct_parse_options $OPTIONS; then
-      error "Invalid options string: $OPTIONS"
-      exit 1
-    fi
-    OPTIONS="$args"
-  }
-  preparse
+	if [ -z "$action" ] || [ "$action" = "list" ]; then
 
-  if [ -z "$action" ] || [ "$action" = "list" ]; then
+		if [ $# -ne 0 ]; then
+			warn "With -L, volumes given on the command line have no effect"
+		fi
 
-    if [ $# -ne 0 ]; then
-      warn "With -L, volumes given on the command line have no effect"
-    fi
+		list_func() { printf "%s\n" "$1"; }
+		ct_read_crypttab list_func
 
-    list_func() { printf "%s\n" "$1"; }
-    ct_read_crypttab list_func
+	elif [ "$action" = "unmap" ]; then
 
-  elif [ "$action" = "unmap" ]; then
+		if [ $# -gt 0 ]; then
+			if [ "$FILTER" != "!noauto" ]; then
+				info "Filters from -O are ignored in this mode"
+			fi
+			unset FILTER
+		fi
 
-    if [ $# -gt 0 ]; then
-      [ "$FILTER" != "!noauto" ] && \
-        info "Filters from -O are ignored in this mode"
-      unset FILTER
-    fi
+		ct_main_unmap "$@"
 
-    ct_main_unmap "$@"
+	elif [ "$action" = "map" ]; then
 
-  elif [ "$action" = "map" ]; then
+		if [ $# -ne 0 ]; then
+			if [ "$FILTER" != "!noauto" ]; then
+				info "Filters from -O are ignored in this mode"
+			fi
+			unset FILTER
+		fi
 
-    if [ $# -ne 0 ]; then
-      [ "$FILTER" != "!noauto" ] && \
-        info "Filters from -O are ignored in this mode"
-      unset FILTER
-    fi
+		ct_main_map "$@"
 
-    ct_main_map "$@"
-
-  else
-    error "Internal error: no action"
-    false
-  fi
+	else
+		error "Internal error: no action"
+		false
+	fi
 }
 
 ######################################################################
@@ -671,7 +660,7 @@ ct_main() {
 # Globals.
 readonly SHORTOPTS="LMUc:fw:nqvVho:O:"
 UDEVRUNNING=0
-LOGLEVEL=1
+VERBOSE=1
 DRYRUN=0
 WAITTIME=10
 CRYPTTAB=/etc/crypttab
@@ -683,5 +672,5 @@ FORCE=0
 
 ct_main "$@"
 
-# vim:ft=sh:sw=2:ts=2:sts=2:et:cc=72:tw=70
+# vim: ft=sh cc=72 tw=70
 # End of file.
