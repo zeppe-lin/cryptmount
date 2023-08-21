@@ -12,11 +12,11 @@ cryptmount - parse F<crypttab> for use by B<cryptsetup>
 
 =item B<cryptmount> [I<OPTION>]... [B<-L>]
 
-=item B<cryptmount> [I<OPTION>]... B<-M> [I<NAME>|I<DEVICE>]
+=item B<cryptmount> [I<OPTION>]...  B<-M> [I<NAME>|I<DEVICE>]
 
-=item B<cryptmount> [I<OPTION>]... B<-M>  I<NAME> I<DEVICE> [I<KEY>]
+=item B<cryptmount> [I<OPTION>]...  B<-M>  I<NAME> I<DEVICE> [I<KEY>]
 
-=item B<cryptmount> [I<OPTION>]... B<-U> [I<NAME>[,...]]
+=item B<cryptmount> [I<OPTION>]...  B<-U> [I<NAME>[,...]]
 
 =back
 
