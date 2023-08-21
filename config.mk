@@ -1,7 +1,7 @@
 # project metadata
-NAME    = cryptmount
-VERSION = 0.2
-DIST    = ${NAME}-${VERSION}
+NAME      = cryptmount
+VERSION   = 0.2
+DIST      = ${NAME}-${VERSION}
 
 # paths
 PREFIX    = /usr/local
