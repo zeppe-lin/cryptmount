@@ -1,17 +1,13 @@
-.POSIX:
-
 include config.mk
 
-manpages: cryptmount.8 crypttab.5
-all: cryptmount manpages
+all: cryptmount cryptmount.8 crypttab.5
 
 %: %.pod
 	pod2man -r "${NAME} ${VERSION}" -c ' ' -n $(basename $@) \
 		-s $(subst .,,$(suffix $@)) $< > $@
 
 %: %.in
-	sed -e "s/@CRYPTSETUP_BIN@/${CRYPTSETUP_BIN}/g" \
-	    -e "s/@VERSION@/${VERSION}/g" $< > $@
+	sed "s/@VERSION@/${VERSION}/" $< > $@
 
 install: all
 	mkdir -p           ${DESTDIR}${PREFIX}/sbin
