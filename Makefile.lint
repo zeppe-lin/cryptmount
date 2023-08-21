@@ -15,7 +15,7 @@ deadlinks:
 
 depscheck:
 	@echo "=======> Check if any dependencies are missing"
-	@which ${CRYPTSETUP_BIN} findmnt blkid mkswap >/dev/null
+	@which cryptsetup findmnt blkid mkswap >/dev/null
 
 podchecker:
 	@echo "=======> Check PODs for syntax errors"
