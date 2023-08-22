@@ -1,5 +1,8 @@
 #!/bin/sh
-# shellcheck disable=3043
+
+# Intentional: allow "local"s declaration.
+# https://www.shellcheck.net/wiki/SC3043
+# shellcheck disable=SC3043
 
 ######################################################################
 # Notification helpers.                                              #
