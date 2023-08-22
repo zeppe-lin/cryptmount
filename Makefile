@@ -4,6 +4,7 @@ all: cryptmount cryptmount.8 crypttab.5
 
 %: %.in
 	sed "s/@VERSION@/${VERSION}/" $< > $@
+	chmod a+x $@
 
 %: %.pod
 	pod2man -r "${NAME} ${VERSION}" -c ' ' -n $(basename $@) \
