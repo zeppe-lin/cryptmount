@@ -2,12 +2,12 @@ include config.mk
 
 all: cryptmount cryptmount.8 crypttab.5
 
+%: %.in
+	sed "s/@VERSION@/${VERSION}/" $< > $@
+
 %: %.pod
 	pod2man -r "${NAME} ${VERSION}" -c ' ' -n $(basename $@) \
 		-s $(subst .,,$(suffix $@)) $< > $@
-
-%: %.in
-	sed "s/@VERSION@/${VERSION}/" $< > $@
 
 install: all
 	mkdir -p           ${DESTDIR}${PREFIX}/sbin
