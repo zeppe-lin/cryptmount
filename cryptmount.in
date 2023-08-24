@@ -465,7 +465,9 @@ ct_parse_options() {
 		*=*)
 			key="${opt%%=*}"
 			val="${opt#*=}"
-			[ "$key" = "$val" ] && unset val
+			if [ "$key" = "$val" ]; then
+				unset val
+			fi
 			;;
 		*)
 			key="$opt"
@@ -488,7 +490,9 @@ ct_parse_options() {
 			;;
 		tmp)
 			# set an external variable
-			[ -z "$val" ] && msg "Defaulting tmp to ext4"
+			if [ -z "$val" ]; then
+				msg "Defaulting tmp to ext4"
+			fi
 			tmpfs="${val:-ext4}"
 			;;
 		size)
