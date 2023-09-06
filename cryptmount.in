@@ -61,7 +61,7 @@ mkdtemp() {
 		random=$(( (1103515245*random + 12345) % 2147483648 ))
 
 		# optionally, shorten name a bit
-		tmpdir=$( printf "/tmp/tmp.%x" $random )
+		tmpdir=$( printf "${TMPDIR:-/tmp}/tmp.%x" $random )
 
 		# loop until new directory is created
 		! mkdir "$tmpdir" 2>&-
