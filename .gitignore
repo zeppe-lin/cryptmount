@@ -1,8 +1,3 @@
-# build files and artefacts
-cryptmount.8
-crypttab.5
-cryptmount
-
 # vim undo and swap files
 .*.un~
 *.swp
