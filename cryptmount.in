@@ -9,19 +9,27 @@
 ######################################################################
 
 msg() {
-	[ $VERBOSE -ge 1 ] && printf "M: %s\n" "$*" >&2
+	if [ $VERBOSE -ge 1 ]; then
+		printf "M: %s\n" "$*" 1>&2
+	fi
 }
 
 info() {
-	[ $VERBOSE -ge 2 ] && printf "I: %s\n" "$*" >&2
+	if [ $VERBOSE -ge 2 ]; then
+		printf "I: %s\n" "$*" 1>&2
+	fi
 }
 
 warn() {
-	[ $VERBOSE -ge 1 ] && printf "W: %s\n" "$*" >&2
+	if [ $VERBOSE -ge 1 ]; then
+		printf "W: %s\n" "$*" 1>&2
+	fi
 }
 
 error() {
-	[ $VERBOSE -ge 0 ] && printf "E: %s\n" "$*" 1>&2
+	if [ $VERBOSE -ge 0 ]; then
+		printf "E: %s\n" "$*" 1>&2
+	fi
 }
 
 # XXX unused? subsection change?
@@ -35,8 +43,13 @@ die() {
 ######################################################################
 
 run() {
-	[ $VERBOSE -ge 2 ] && printf "R: %s\n" "$*" >&2
-	[ $DRYRUN  -eq 0 ] && "$@"
+	if [ $VERBOSE -ge 2 ]; then
+		printf "R: %s\n" "$*" 1>&2
+	fi
+
+	if [ $DRYRUN  -eq 0 ]; then
+		"$@"
+	fi
 }
 
 trim() {
