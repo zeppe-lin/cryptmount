@@ -9,7 +9,7 @@ is a patched version of Matthew's Monaco cryptmount.
 
 This distribution have the following little differences:
 - add LICENSE file (obtained from Matthew's initial Arch package)
-- man pages in POD format
+- man pages in mdoc(7) format
 
 See git log for complete/further differences.
 
@@ -21,9 +21,7 @@ The original sources can be downloaded from:
 REQUIREMENTS
 ------------
 **Build time**:
-- POSIX sh(1p) and "mandatory utilities"
-- GNU make(1)
-- pod2man(1pm) to build man pages
+- POSIX sh(1p), make(1p) and "mandatory utilities"
 
 **Runtime**:
 - POSIX sh(1p) and "mandatory utilities"
