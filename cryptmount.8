@@ -1,0 +1,259 @@
+.\" cryptmount(8) manual page
+.\" See COPYING and COPYRIGHT files for corresponding information.
+.Dd September 7, 2023
+.Dt CRYPTMOUNT 8
+.Os cryptmount @VERSION@
+.\" ==================================================================
+.Sh NAME
+.Nm cryptmount
+.Nd parse crypttab for use by cryptsetup
+.\" ==================================================================
+.Sh SYNOPSIS
+.Nm
+.Op option ...
+.Op Fl L
+.Nm
+.Op option ...
+.Cm \&- Ns M
+.Op name | device
+.Nm
+.Op option ...
+.Cm \&- Ns M
+.Ar name device
+.Op key
+.Nm
+.Op option ...
+.Cm \&- Ns U
+.Op name Ns Op ,...
+.Nm
+.Op Fl v
+.Nm
+.Op Fl h
+.\" ==================================================================
+.Sh DESCRIPTION
+The
+.Nm
+utility uses
+.Xr crypttab 5
+for calling
+.Xr cryptsetup 8 ;
+it can also be used to define a
+.Sy volume
+on the command line without
+.Sy crypttab .
+.\" ------------------------------------------------------------------
+.Ss Actions
+.Bl -tag -width Ds
+.\" ---> -L
+.It Fl L
+List the
+.Ar name Ns (s)
+(first column) of
+.Sy volumes
+from
+.Sy crypttab .
+Use with
+.Fl O
+to manipulate which
+.Ar name Ns (s)
+are listed.
+.\" ---> -M
+.It Fl M
+Perform a mapping.
+The first form of this command finds a
+.Sy volume
+from
+.Sy crypttab
+either by its
+.Ar name
+or
+.Ar device ,
+or if nothing is given then map all
+.Sy volumes
+(use with
+.Fl O
+to manipulate which
+.Sy volumes
+are mapped).
+The second form defines a
+.Sy volume
+entirely on the command line,
+.Sy crypttab
+is not used.
+.\" ---> -U
+.It Fl U
+Unmap
+.Sy volume Ns (s) .
+If a list of
+.Ar name Ns (s)
+is given, unmap them.
+Otherwise unmap all
+.Sy volume Ns (s)
+from
+.Sy crypttab
+(with
+.Fl O
+to manipulate which
+.Sy volume Ns (s)
+are unmapped).
+.El
+.\" ------------------------------------------------------------------
+.Ss Options
+.Bl -tag -width Ds
+.\" ---> -c file
+.It Fl c Ar file
+Override the default
+.Sy crypttab
+location.
+.\" ---> -f
+.It Fl f
+Force potentially destructive mappings.
+For plain mappings (which are used with the
+.Sy swap
+and
+.Sy tmp
+options), there is a lot of potential to accidentally lose data.
+Because of this,
+.Sy cryptmount
+performs a check with
+.Xr blkid 8
+to see if there is anything identifiable on
+.Ar device .
+Use
+.Fl f
+to bypass this check.
+.\" ---> -w num
+.It Fl w Ar num
+Time (in seconds) to wait for
+.Ar device
+if it is not already available.
+If
+.Xr udevd 8
+is not running, then
+.Sy cryptmount
+does not bother to wait and this option is a no-op.
+This also affects the wait time for
+.Ar keydevice
+if your key is a block device or a file on a block device.
+.\" ---> -n
+.It Fl n
+Dry run, useful with
+.Fl v
+to see how
+.Xr cryptsetup 8
+will be called.
+.\" ---> -v
+.It Fl v
+Increase verbosity.
+This prints the commands which are being called
+.Po e.g.,
+.Xr cryptsetup 8 ,
+.Xr mkswap 8 ,
+etc
+.Pc .
+.\" ---> -q
+.It Fl q
+Decrease verbosity.
+.\" ---> -V
+.It Fl V
+Print version and exit.
+.\" ---> -h
+.It Fl h
+Print help and exit.
+.\" ---> -o options
+.It Fl o Ar options
+An options list with items such as
+.Sy swap ,
+.Sy cipher ,
+etc.
+This may be given multiple times with a cumulative effect.
+See
+.Xr crypttab 5
+for the full
+.Ar options
+syntax.
+.\" ---> -O filters
+.It Fl O Ar filters
+Similar to
+.Ar options ,
+this is used to manipulate which
+.Sy volume Ns (s)
+are used with
+.Fl L
+and with
+.Fl M Ns / Ns Fl U
+without arguments.
+If an option is present in
+.Ar filters ,
+then the
+.Sy volume
+in
+.Sy crypttab
+must contain the option.
+For example
+.Sy -O swap,size
+matches all
+.Sy volume Ns (s)
+with the
+.Sy swap
+option and any
+.Sy size Ns = Ns size
+option; or
+.Sy -O swap,size=512
+matches only those
+.Sy volume Ns (s)
+with the
+.Sy swap
+option and specifically
+.Sy size=512 .
+.Pp
+A filter option may also be negated by prefixing it with an
+exclamation mark
+.Po
+.Ql \&!
+.Pc .
+For example,
+.Sy -O swap,!size
+includes all
+.Sy volume Ns (s)
+with the
+.Sy swap
+option but
+.Sy without
+the
+.Em size
+option.
+There is a built-in filter
+.Sy !noauto .
+.Pp
+Filters are especially useful with
+.Sy % Ns tag
+options.
+For example,
+.Sy -O !%random
+can be used to map all
+.Sy volumes
+which don’t use
+.Sy /dev/urandom
+for a password and
+.Sy -O %random
+to map the remainder once your system’s random seed has been restored.
+.Pp
+The
+.Fl O
+option has
+.Sy no effect
+when calling
+.Sy cryptmount
+in a way that does not use
+.Sy crypttab .
+.El
+.\" ==================================================================
+.Sh SEE ALSO
+.Xr crypttab 5 ,
+.Xr cryptsetup 8
+.\" ==================================================================
+.Sh AUTHORS
+.An Matt Monaco Aq Mt dgbaley27@0x01b.net
+.\" vim: cc=72 tw=70
+.\" End of file.

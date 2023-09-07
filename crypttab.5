@@ -1,0 +1,194 @@
+.\" crypttab(5) manual page
+.\" See COPYING and COPYRIGHT files for corresponding information.
+.Dd September 8, 2023
+.Dt CRYPTTAB 5
+.Os cryptmount @VERSION@
+.\" ==================================================================
+.Sh NAME
+.Nm crypttab
+.Nd static information about dm-crypt filesystems
+.\" ==================================================================
+.Sh SYNOPSIS
+/etc/crypttab
+.\" ==================================================================
+.Sh DESCRIPTION
+The file
+.Pa crypttab
+contains descriptive information about the encrypted volumes the
+system can mount.
+.Pa crypttab
+is intended to be read by
+.Xr cryptmount 8 ,
+and only written to by human administrators.
+Each
+.Dq volume
+is described on a separate line by four fields.
+Fields are separated by whitespace.
+Empty lines and lines beginning with a hash mark
+.Po
+.Ql #
+.Pc
+are ignored.
+.\" ------------------------------------------------------------------
+.Ss The first field (name).
+This field describes the name of the
+.Dq volume
+which will appear at
+.Pa /dev/mapper/ Ns Sy name .
+This must be a plain filename without any directory components.
+.\" ------------------------------------------------------------------
+.Ss The second field (device).
+The field describes an absolute path, UUID, PARTUUID, or LABEL to a
+device or file which will be mapped to
+.Pa /dev/mapper/ Ns Sy name .
+.\" ------------------------------------------------------------------
+.Ss The third field (key).
+The
+.Sy key
+field has the following format:
+.Bd -literal -offset indent
+key := - | keydevice[[:fstype] :keyfile]
+.Ed
+.Pp
+This field may be blank or a hyphen mark
+.Po
+.Ql \&-
+.Pc
+for interactive passwords.
+.Em keydevice
+may be an absolute path, UUID, PARTUUID, or LABEL to a device or file
+which contains the passphrase.
+If
+.Em keyfile
+(and
+.Em fstype )
+are given,
+.Em keydevice
+will be mounted if it isn't already.
+.Em keyfile
+is an absolute path relative to the root of the file system on
+.Em keydevice .
+.Pp
+For compatibility with other formats,
+.Sy ASK
+and
+.Sy none
+may be used in place of
+.Sy -
+and
+.Sy SWAP
+is an idiom for
+.Sy /dev/urandom
+and the
+.Sy swap
+option.
+See
+.Sx "The fourth field (options)."
+below.
+.Pp
+.Sy Note :
+A literal password in this field is
+.Sy not
+supported.
+.\" ------------------------------------------------------------------
+.Ss The fourth field (options).
+The
+.Sy options
+field has the following format:
+.Bd -literal -offset indent
+options := key[=value] | %tag | options,options
+.Ed
+.Pp
+This field is a comma separated list.
+It is described in detail below.
+.Pp
+For compatibility with other formats, if the first character is a
+hyphen mark
+.Po
+.Ql \&-
+.Pc
+then the entire field is interpreted as a literal command line for
+.Xr cryptsetup 8 .
+.Pp
+Most options have a one-to-one correspondence to
+.Xr cryptsetup 8
+command line options and are simply reformatted.
+For example, to use
+.Bd -literal -offset indent -compact
+cryptsetup --cipher CIPHER
+.Ed
+or
+.Bd -literal -offset indent -compact
+cryptsetup -c CIPHER
+.Ed
+the options
+.Sy cipher Ns = Ns Qo Li CIPHER Qc
+or
+.Sy c Ns = Ns Qo Li CIPHER Qc
+may be used.
+.Pp
+Other options which are used by
+.Xr cryptmount 8
+are:
+.Bl -tag -width "device-size=size"
+.It Sy swap
+Run
+.Xr mkswap 8
+on
+.Pa /dev/mapper/ Ns Sy name .
+.It Sy tmp Ns [= Ns Em fs ]
+Run
+.Xr mkfs 8
+with the file system type of
+.Em fs
+on
+.Pa /dev/mapper/ Ns Sy name .
+The default
+.Em fs
+is
+.Sy ext4 .
+.It Sy noauto
+Do not automatically map this
+.Dq volume .
+.It Sy size Ns = Ns Em size
+See
+.Xr cryptsetup 8 Ns \&'s
+.Sy --key-size .
+Other formats for
+.Pa crypttab
+use
+.Em size
+for the amount of bytes to read from
+.Em key .
+.It Sy device-size Ns = Ns Em size
+See
+.Xr cryptsetup 8 Ns \&'s
+.Sy --size .
+This accounts for the quirk with
+.Em size .
+.It Sy % Ns Em tag
+Tags can be used to include or exclude a group of
+.Dq volumes
+when running
+.Xr cryptmount 8 .
+Additionally,
+.Sy cryptmount
+automatically adds to
+.Dq volumes ,
+with a key of
+.Sy /dev/urandom ,
+a
+.Sy %random
+tag.
+This tag may be used by the initscripts to delay the mapping of these
+volumes until after the random seed has been restored during boot.
+.El
+.\" ==================================================================
+.Sh SEE ALSO
+.Xr cryptmount 8 ,
+.Xr cryptsetup 8
+.\" ==================================================================
+.Sh AUTHORS
+.An Matt Monaco Aq Mt dgbaley27@0x01b.net
+.\" vim: cc=72 tw=70
+.\" End of file.
