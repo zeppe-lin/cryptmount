@@ -10,23 +10,39 @@
 .\" ==================================================================
 .Sh SYNOPSIS
 .Nm
-.Op option ...
+.Op Fl fnvq
+.Op Fl c Ar crypttab
+.Op Fl w Ar num
+.Op Fl o Ar options
+.Op Fl O Ar filters
 .Op Fl L
 .Nm
-.Op option ...
+.Op Fl fnvq
+.Op Fl c Ar crypttab
+.Op Fl w Ar num
+.Op Fl o Ar options
+.Op Fl O Ar filters
 .Cm \&- Ns M
 .Op name | device
 .Nm
-.Op option ...
+.Op Fl fnvq
+.Op Fl c Ar crypttab
+.Op Fl w Ar num
+.Op Fl o Ar options
+.Op Fl O Ar filters
 .Cm \&- Ns M
 .Ar name device
 .Op key
 .Nm
-.Op option ...
+.Op Fl fnvq
+.Op Fl c Ar crypttab
+.Op Fl w Ar num
+.Op Fl o Ar options
+.Op Fl O Ar filters
 .Cm \&- Ns U
 .Op name Ns Op ,...
 .Nm
-.Op Fl v
+.Op Fl V
 .Nm
 .Op Fl h
 .\" ==================================================================
@@ -100,11 +116,10 @@ are unmapped).
 .\" ------------------------------------------------------------------
 .Ss Options
 .Bl -tag -width Ds
-.\" ---> -c file
-.It Fl c Ar file
-Override the default
-.Sy crypttab
-location.
+.\" ---> -c crypttab
+.It Fl c Ar crypttab
+Specify an alternate configuration file instead of the default
+.Pa /etc/crypttab .
 .\" ---> -f
 .It Fl f
 Force potentially destructive mappings.
@@ -154,12 +169,6 @@ etc
 .\" ---> -q
 .It Fl q
 Decrease verbosity.
-.\" ---> -V
-.It Fl V
-Print version and exit.
-.\" ---> -h
-.It Fl h
-Print help and exit.
 .\" ---> -o options
 .It Fl o Ar options
 An options list with items such as
@@ -247,6 +256,12 @@ when calling
 .Sy cryptmount
 in a way that does not use
 .Sy crypttab .
+.\" ---> -V
+.It Fl V
+Print version and exit.
+.\" ---> -h
+.It Fl h
+Print help and exit.
 .El
 .\" ==================================================================
 .Sh SEE ALSO
