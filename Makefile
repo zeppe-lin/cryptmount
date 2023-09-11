@@ -10,10 +10,8 @@ install: all
 	mkdir -p ${DESTDIR}${MANPREFIX}/man8
 	sed "s/@VERSION/${VERSION}/" cryptmount \
 		> ${DESTDIR}${PREFIX}/sbin/cryptmount
-	sed "s/^\.Os/.Os ${NAME} ${VERSION}/" crypttab.5 \
-		> ${DESTDIR}${MANPREFIX}/man5/crypttab.5
-	sed "s/^\.Os/.Os ${NAME} ${VERSION}/" cryptmount.8 \
-		> ${DESTDIR}${MANPREFIX}/man8/cryptmount.8
+	cp -f crypttab.5   ${DESTDIR}${MANPREFIX}/man5/
+	cp -f cryptmount.8 ${DESTDIR}${MANPREFIX}/man8/
 	chmod 0755 ${DESTDIR}${PREFIX}/sbin/cryptmount
 	chmod 0644 ${DESTDIR}${MANPREFIX}/man5/crypttab.5
 	chmod 0644 ${DESTDIR}${MANPREFIX}/man8/cryptmount.8
