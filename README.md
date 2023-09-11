@@ -9,7 +9,7 @@ is a patched version of Matthew's Monaco cryptmount.
 
 This distribution have the following little differences:
 - add LICENSE file (obtained from Matthew's initial Arch package)
-- man pages in mdoc(7) format
+- manual pages in mdoc(7) format
 
 See git log for complete/further differences.
 
