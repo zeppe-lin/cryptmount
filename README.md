@@ -11,7 +11,7 @@ This distribution have the following little differences:
 - add LICENSE file (obtained from Matthew's initial Arch package)
 - manual pages in mdoc(7) format
 - GNU-style help/usage (-[hV] options)
-- no (/usr/bin/)awk dependency
+- no awk(1) dependency
 - findmnt(8) is mandatory
 - use `TMPDIR` as work dir and fallback to `/tmp` if unset
 - POSIX Makefile
