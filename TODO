@@ -1,5 +1,8 @@
 TODO cryptmount
 
+	- [ ] The code refactoring is still a big goal.
+	  - [ ] Fix shellcheck warnings (as part of code refactoring).
+
 	- [ ] Add bash completion?
 
 End of file.
