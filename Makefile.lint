@@ -26,7 +26,7 @@ deadlinks:
 	@$(CURMAKE) curllinks | grep -v '^\[200\]' | sort -u
 
 spellcheck:
-	@mandoc -T html *.5 *.8 | hunspell -H -l - | sort | uniq
+	@mandoc -T html *.5 *.8 | hunspell -H -l - | sort -u
 
 mancheck:
 	@echo "=======> Check man pages for syntax errors"
