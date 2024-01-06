@@ -1,7 +1,7 @@
 TODO cryptmount
 
 	---------------------------------------------------------------------
-	Don't use getopt(1) instead of builtin "getopts" since the cryptmount
+	Don't use getopt(1) instead of builtin "getopts" since the getopt(1)
 	utility is placed into /usr/bin and is unavailable at "separate /usr"
 	boot.
 	---------------------------------------------------------------------
