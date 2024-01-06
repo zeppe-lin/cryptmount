@@ -590,6 +590,10 @@ ct_main() {
 		fi
 	}
 
+	# Don't use getopt(1) instead of builtin "getopts" since the
+	# getopt(1) utility is placed into /usr/bin and cryptmount(8)
+	# may be placed to /sbin.  Consequently that will break a
+	# "separate /usr" boot.
 	while getopts ":$SHORTOPTS" opt; do
 		case $opt in
 		L) set_action list ;;
