@@ -1,14 +1,15 @@
 OVERVIEW
---------
-This directory contains cryptmount, a tiny utility that is a
-wrapper for cryptsetup which makes use of a crypttab file.
+========
 
-This distribution is a fork of Sabotage-Linux' cryptmount as of
-commit 8b7af97 (Thu Nov 19, 2020).  The Sabotage-Linux' version
-of cryptmount is a patched version of Matthew's Monaco
-cryptmount.
+This directory contains cryptmount, a tiny utility that is a wrapper for
+cryptsetup which makes use of a crypttab file.
+
+This distribution is a fork of Sabotage-Linux' cryptmount as of commit 8b7af97
+(Thu Nov 19, 2020).  The Sabotage-Linux' version of cryptmount is a patched
+version of Matthew's Monaco cryptmount.
 
 This distribution have the following little differences:
+
 - add LICENSE file (taken from Matthew's initial Arch package)
 - manual pages in mdoc(7) format
 - GNU-style help/usage (-[hV] options)
@@ -27,11 +28,14 @@ The original sources can be downloaded from:
 
 
 REQUIREMENTS
-------------
-**Build time**:
+============
+
+Build time
+----------
 - POSIX sh(1p), make(1p) and "mandatory utilities"
 
-**Runtime**:
+Runtime
+-------
 - POSIX sh(1p) and "mandatory utilities"
 - findmnt(8)
 - cryptsetup(8)
@@ -40,14 +44,15 @@ REQUIREMENTS
 
 
 INSTALL
--------
-The shell command `make install` should install this package.
+=======
 
+The shell command `make install` should install this package.
 See `config.mk` file for configuration parameters.
 
 
 LICENSE
--------
+=======
+
 cryptmount is licensed through the GNU General Public License v1
 <https://gnu.org/licenses/gpl.html>.
 Read the COPYING file for copying conditions.
