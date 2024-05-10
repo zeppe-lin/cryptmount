@@ -536,10 +536,8 @@ ct_parse_options() {
 
 print_help() {
 	cat <<EOF
-Usage: cryptmount [OPTION]... [-L]
-       cryptmount [OPTION]...  -M [NAME|DEVICE]
-       cryptmount [OPTION]...  -M  NAME DEVICE [KEY]
-       cryptmount [OPTION]...  -U [NAME[,...]]
+Usage: cryptmount [-Vfhnvq] [-c crypttab] [-w num] [-o options] [-O filters]
+             [{-L | -M [name | device | name device [key]] | -U [name[,...]]}]
 List, map, and unmap encrypted volumes. The utility is a wrapper for
 cryptsetup which makes use of a crypttab file.
 
