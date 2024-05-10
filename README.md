@@ -9,16 +9,14 @@ This distribution is a fork of Sabotage-Linux' cryptmount as of commit 8b7af97
 version of Matthew's Monaco cryptmount.
 
 This distribution have the following little differences:
-
-- add LICENSE file (taken from Matthew's initial Arch package)
-- manual pages in mdoc(7) format
-- GNU-style help/usage (-[hV] options)
-- no awk(1) dependency
-- findmnt(8) is mandatory
-- use `TMPDIR` as work dir and fallback to `/tmp` if unset
-- POSIX Makefile
-- various minor changes and cleanups (however, the code
-  refactoring is still WIP)
+* add LICENSE file (taken from Matthew's initial Arch package)
+* manual pages in mdoc(7) format
+* GNU-style help/usage (-[hV] options)
+* no awk(1) dependency
+* findmnt(8) is mandatory
+* use `TMPDIR` as work dir and fallback to `/tmp` if unset
+* POSIX Makefile
+* various minor changes and cleanups (however, refactoring is still WIP)
 
 See git log for complete/further differences.
 
@@ -32,15 +30,15 @@ REQUIREMENTS
 
 Build time
 ----------
-- POSIX sh(1p), make(1p) and "mandatory utilities"
+* POSIX sh(1p), make(1p) and "mandatory utilities"
 
 Runtime
 -------
-- POSIX sh(1p) and "mandatory utilities"
-- findmnt(8)
-- cryptsetup(8)
-- blkid(8)
-- mkswap(8)
+* POSIX sh(1p) and "mandatory utilities"
+* findmnt(8)
+* cryptsetup(8)
+* blkid(8)
+* mkswap(8)
 
 
 INSTALL
