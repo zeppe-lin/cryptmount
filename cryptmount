@@ -1,4 +1,6 @@
 #!/bin/sh
+# cryptmount - parse crypttab for use by cryptsetup
+# See COPYING and COPYRIGHT files for corresponding information.
 
 # Intentional: allow "local"s declaration.
 # https://www.shellcheck.net/wiki/SC3043
