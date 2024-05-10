@@ -10,41 +10,18 @@
 .\" ==================================================================
 .Sh SYNOPSIS
 .Nm
-.Op Fl fnvq
+.Op Fl Vfhnvq
 .Op Fl c Ar crypttab
 .Op Fl w Ar num
 .Op Fl o Ar options
 .Op Fl O Ar filters
-.Op Fl L
-.Nm
-.Op Fl fnvq
-.Op Fl c Ar crypttab
-.Op Fl w Ar num
-.Op Fl o Ar options
-.Op Fl O Ar filters
-.Cm \&- Ns M
-.Op name | device
-.Nm
-.Op Fl fnvq
-.Op Fl c Ar crypttab
-.Op Fl w Ar num
-.Op Fl o Ar options
-.Op Fl O Ar filters
-.Cm \&- Ns M
-.Ar name device
-.Op key
-.Nm
-.Op Fl fnvq
-.Op Fl c Ar crypttab
-.Op Fl w Ar num
-.Op Fl o Ar options
-.Op Fl O Ar filters
-.Cm \&- Ns U
-.Op name Ns Op ,...
-.Nm
-.Op Fl V
-.Nm
-.Op Fl h
+.Oo
+.Pf { Fl L |
+.Fl M Op name | device | Ar name Ar device Op key
+\&|
+.Fl U Op name Ns Op ,... Ns
+\&}
+.Oc
 .\" ==================================================================
 .Sh DESCRIPTION
 The
