@@ -12,3 +12,5 @@ No milestone
 
   - [ ] fix shellcheck warnings and add checking to GitHub Actions:
         https://github.com/zeppe-lin/cryptmount/issues/1
+
+  - [ ] crypttab's syntax file for vim?
