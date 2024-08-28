@@ -63,8 +63,8 @@ get_mount() {
 }
 
 # Make temporary directory.  Use it instead of "/usr/bin/mktemp -d",
-# since cryptmount is used in /etc/rc and must not require /usr/*
-# utilities.
+# since cryptmount is used in /etc/rc and must NOT require utilities
+# on /usr, which can be separate partition.
 mkdtemp() {
 	# initial entropy, the more we can get the better
 	local random=$(( $(date +%S%M%H%j) + $$ ))
