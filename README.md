@@ -35,7 +35,7 @@ Build time
 Runtime
 -------
   * POSIX sh(1p) and "mandatory utilities"
-  * findmnt(8)
+  * findmnt(8) from coreutils package
   * cryptsetup(8)
   * blkid(8)
   * mkswap(8)
