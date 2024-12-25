@@ -14,7 +14,7 @@ This distribution have the following little differences:
   * GNU-style help/usage (-[hV] options)
   * no awk(1) dependency
   * findmnt(8) is mandatory
-  * use `TMPDIR` as work dir and fallback to `/tmp` if unset
+  * use `TMPDIR` as work directory and fallback to `/tmp` if unset
   * POSIX Makefile
   * various minor changes and cleanups (however, refactoring is still WIP)
 
