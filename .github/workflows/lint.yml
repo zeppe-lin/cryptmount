@@ -19,7 +19,6 @@ jobs:
     - name: Check src scripts for errors
       run: cd src && make lint
 
-#   Usually fails on:  STYLE: referenced manual not found: Xr ...
 #   - name: Check man pages for errors (requires mandoc)
 #     run: cd man && make lint
 
