@@ -1,12 +1,12 @@
 OVERVIEW
 ========
 
-This directory contains cryptmount, a tiny utility that is a wrapper for
-cryptsetup which makes use of a crypttab file.
+This directory contains cryptmount, a tiny utility that is a wrapper
+for cryptsetup which makes use of a crypttab file.
 
-This distribution is a fork of Sabotage-Linux' cryptmount as of commit 8b7af97
-(Thu Nov 19, 2020).  The Sabotage-Linux' version of cryptmount is a patched
-version of Matthew's Monaco cryptmount.
+This distribution is a fork of Sabotage-Linux' cryptmount as of commit
+8b7af97 (Thu Nov 19, 2020).  The Sabotage-Linux' version of cryptmount
+is a patched version of Matthew's Monaco cryptmount.
 
 This distribution have the following little differences:
   * add LICENSE file (taken from Matthew's initial Arch package)
@@ -16,7 +16,8 @@ This distribution have the following little differences:
   * findmnt(8) is mandatory
   * use `TMPDIR` as work directory and fallback to `/tmp` if unset
   * POSIX Makefile
-  * various minor changes and cleanups (however, refactoring is still WIP)
+  * various minor changes and cleanups (however, refactoring is still
+    WIP)
 
 See git log for complete/further differences.
 
