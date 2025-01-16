@@ -1,7 +1,7 @@
 OVERVIEW
 ========
 
-This directory contains cryptmount, a tiny utility that is a wrapper
+This repository contains cryptmount, a tiny utility that is a wrapper
 for cryptsetup which makes use of a crypttab file.
 
 This distribution is a fork of Sabotage-Linux' cryptmount as of commit
