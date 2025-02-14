@@ -61,6 +61,16 @@ Manual pages:
 - [crypttab.5](https://zeppe-lin.github.io/crypttab.5.html)
 
 
+CREDITS
+=======
+
+Original developer:
+  * Matthew Monaco <matthew.monaco@0x01b.net>
+
+Resurrection & patches:
+  * rofl0r <retnyg@gmx.net>
+
+
 LICENSE
 =======
 
