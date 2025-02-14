@@ -50,6 +50,17 @@ The shell command `make install` should install this package.
 See `config.mk` file for configuration parameters.
 
 
+DOCUMENTATION
+=============
+
+Online documentation
+--------------------
+
+Manual pages:
+- [cryptmount.8](https://zeppe-lin.github.io/cryptmount.8.html)
+- [crypttab.5](https://zeppe-lin.github.io/crypttab.5.html)
+
+
 LICENSE
 =======
 
