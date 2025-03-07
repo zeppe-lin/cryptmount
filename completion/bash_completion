@@ -1,0 +1,170 @@
+# bash programmable completion for cryptmount(8)
+#
+# To install, copy this file to /etc/bash_completion.d/
+# or ~/.bash_completion (depending on your distribution)
+# and ensure bash-completion is installed and enabled.
+#
+# For system-wide installation (requires root):
+# sudo cp cryptmount-completion.bash /etc/bash_completion.d/cryptmount
+#
+# For user-local installation:
+# mkdir -p ~/.bash_completion.d
+# cp cryptmount-completion.bash ~/.bash_completion.d/cryptmount
+#
+# Then, in your ~/.bashrc or ~/.bash_profile, ensure you have:
+# if ! shopt -oq posix; then
+#   if [[ -f /etc/bash_completion ]]; then
+#     . /etc/bash_completion
+#   elif [[ -d /etc/bash_completion.d ]]; then
+#     for bcfile in /etc/bash_completion.d/* ; do
+#       . "$bcfile"
+#     done
+#   fi
+# fi
+#
+# or for ~/.bash_completion.d:
+# if ! shopt -oq posix; then
+#   if [[ -d ~/.bash_completion.d ]]; then
+#     for bcfile in ~/.bash_completion.d/* ; do
+#       . "$bcfile"
+#     done
+#   fi
+# fi
+#
+
+_cryptmount_get_volumes()
+{
+    # Extract volume names from /etc/crypttab, skipping comments and empty lines.
+    awk '$1 !~ /^#/ && NF > 0 {print $1}' /etc/crypttab
+}
+
+_cryptmount_get_devices()
+{
+    # List block devices from /dev/block and /dev/disk/by-*
+    # Consider filtering further if needed (e.g., only block devices that are not mounted).
+    compgen -f /dev/block/
+    compgen -f /dev/disk/by-uuid/
+    compgen -f /dev/disk/by-label/
+    compgen -f /dev/disk/by-partuuid/
+    compgen -f /dev/disk/by-id/
+}
+
+_cryptmount_get_fstab_types()
+{
+    # Static list of common filesystem types.
+    # For a more comprehensive list, you could parse /proc/filesystems,
+    # but for completion, a common set is often sufficient.
+    COMPREPLY=( $(compgen -W "ext4 ext3 ext2 xfs btrfs jfs reiserfs swap vfat ntfs f2fs" -- "$cur") )
+}
+
+_cryptmount_get_crypttab_options()
+{
+    # Common crypttab options for -o and -O completion.
+    COMPREPLY=( $(compgen -W "luks plain swap noauto keyfile cipher keyfile-offset keyfile-size allow-discards same-cpu-crypt perf-no_read_workqueue perf-no_write_workqueue header segments offset size iv-offset hash pbkdf iterations pbkdf-memory pbkdf-parallel mkswap tmp" -- "$cur") )
+}
+
+
+_cryptmount()
+{
+    local cur prev opts volumes devices fstab_types crypttab_options
+    COMPREPLY=()
+    _get_comp_words_by_ref cur prev
+
+    opts="-c -f -h -L -M -n -o -O -q -U -v -V -w" # Short options
+    volumes=$(_cryptmount_get_volumes)
+    devices=$( _cryptmount_get_devices )
+    fstab_types=$( _cryptmount_get_fstab_types )
+    crypttab_options=$( _cryptmount_get_crypttab_options )
+
+
+    case "$prev" in
+        -c )
+            _filedir # Complete file paths for -c option (crypttab file)
+            return 0
+            ;;
+        -w )
+            return 0 # -w option takes a number, no specific completion needed. Default filename completion is fine.
+            ;;
+        -o | -O )
+            COMPREPLY=( $(compgen -W "$crypttab_options" -- "$cur") )
+            if [[ "$cur" == *=* ]]; then
+                local opt_key="${cur%=*}"
+                case "$opt_key" in
+                    keyfile )
+                        _filedir # Complete file paths for keyfile= option
+                        return 0
+                        ;;
+                    tmp )
+                        _cryptmount_get_fstab_types # Complete filesystem types for tmp= option
+                        return 0
+                        ;;
+                    * )
+                        return 0 # No specific completion for other option values, rely on default filename completion
+                        ;;
+                esac
+            fi
+            return 0
+            ;;
+        cryptmount ) # After the command 'cryptmount'
+            COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+            if [[ "$cur" != -* ]]; then # If not starting with option, suggest actions or volume names
+                COMPREPLY+=( $(compgen -W "list map unmap -L -M -U" -- "$cur") )
+            fi
+            return 0
+            ;;
+        -M ) # After -M option
+            case "$cur" in
+                -*) # If current word starts with '-', suggest options
+                    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+                    return 0
+                    ;;
+                *) # Suggest volume names, devices, or keyfiles depending on number of words so far
+                    words=$(echo "$COMP_LINE" | awk '{print NF}')
+                    case "$words" in
+                        2 ) # 'cryptmount -M <volume_name or device or ...>'
+                            COMPREPLY=( $(compgen -W "$volumes" -- "$cur") )
+                            COMPREPLY+=( $(compgen -f /dev/mapper/ -- "$cur") ) # suggest existing mapper devices as names as well?
+                            COMPREPLY+=( $(compgen -f /dev/ -- "$cur") ) # suggest devices
+                            return 0
+                            ;;
+                        3 ) # 'cryptmount -M <volume_name> <device or keyfile...>'
+                            COMPREPLY=( $(compgen -f /dev/ -- "$cur") ) # suggest devices for second argument
+                            COMPREPLY+=( $(compgen -f -- "$cur") ) # suggest key files as well
+                            return 0
+                            ;;
+                        4 ) # 'cryptmount -M <volume_name> <device> <keyfile or options...>'
+                            COMPREPLY=( $(compgen -f -- "$cur") ) # suggest keyfiles for third argument
+                            COMPREPLY+=( $(compgen -W "$crypttab_options" -- "$cur") ) # suggest options as well
+                            return 0
+                            ;;
+                        *) # After more arguments to -M, suggest options
+                             COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+                             COMPREPLY+=( $(compgen -W "$crypttab_options" -- "$cur") )
+                            return 0
+                            ;;
+                    esac
+                    ;;
+            esac
+            return 0
+            ;;
+        -U ) # After -U option, suggest volume names
+             COMPREPLY=( $(compgen -W "$volumes" -- "$cur") )
+             return 0
+             ;;
+        -L ) # After -L option, no further completion
+            return 0
+            ;;
+        -V | -h | -f | -n | -q | -v ) # Options that don't take arguments, no further completion needed
+            return 0
+            ;;
+        *) # Default case, should not normally reach here, but in case of errors, suggest options
+            COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+            return 0
+            ;;
+    esac
+}
+
+complete -F _cryptmount cryptmount
+
+# vim: ft=bash
+# End of file.
