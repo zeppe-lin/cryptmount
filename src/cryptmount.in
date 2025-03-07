@@ -7,43 +7,71 @@
 # shellcheck disable=SC3043
 
 ######################################################################
-# Notification helpers.                                              #
+# Section: Notification helpers                                      #
+# Functions for displaying messages to the user.                     #
 ######################################################################
 
+# msg - Print a message to stderr if VERBOSE level is 1 or higher.
+# Args:
+#   $*: The message to print.
 msg() {
 	if [ $VERBOSE -ge 1 ]; then
 		printf "M: %s\n" "$*" 1>&2
 	fi
 }
 
+# info - Print an informational message to stderr if VERBOSE level is
+# 2 or higher.
+# Args:
+#   $*: The message to print.
 info() {
 	if [ $VERBOSE -ge 2 ]; then
 		printf "I: %s\n" "$*" 1>&2
 	fi
 }
 
+# warn - Print a warning message to stderr if VERBOSE level is 1 or
+# higher.
+# Args:
+#   $*: The message to print.
 warn() {
 	if [ $VERBOSE -ge 1 ]; then
 		printf "W: %s\n" "$*" 1>&2
 	fi
 }
 
+# error - Print an error message to stderr if VERBOSE level is 0 or
+# higher.
+# Args:
+#   $*: The message to print.
 error() {
 	if [ $VERBOSE -ge 0 ]; then
 		printf "E: %s\n" "$*" 1>&2
 	fi
 }
 
-# XXX unused? subsection change?
+# XXX: This function is currently unused.
+# die  - Print an error message to stderr and exit the script with the
+# given exit code.  Defaults to exit code 1 if no code is provided.
+# Args:
+#   $*: The message to print.
+#   $1: Exit code.
 die() {
 	printf "E: %s\n" "$*" 1>&2
 	exit "${1:-1}"
 }
 
 ######################################################################
-# Utilities.                                                         #
+# Section: Utilities                                                 #
+# Functions that provides reusable utility operations.               #
 ######################################################################
 
+# run command [arguments...]
+#   Execute the given command with arguments if DRYRUN is off (0).
+#   Print the command to stderr (as "R: command ...") is VERBOSE level
+#     is 2 or higher.
+# Args:
+#   $@: Command and arguments.
 run() {
 	if [ $VERBOSE -ge 2 ]; then
 		printf "R: %s\n" "$*" 1>&2
@@ -54,74 +82,126 @@ run() {
 	fi
 }
 
+# trim string
+#   Remove leading and trailing whitespace (spaces, newlines, tabs)
+#   from the input string.
+# Args:
+#   $*: The input string.
 trim() {
 	IFS="$(printf ' \n\t')" printf "%s" $*
 }
 
+# get_mount device
+#   Retrieve the mount point of the given device using findmnt(1).
+# Output:
+#   The mount point to stdout if found, otherwise output nothing.
 get_mount() {
 	findmnt -cfmnoTARGET "$1"
 }
 
-# Make temporary directory.  Use it instead of "/usr/bin/mktemp -d",
-# since cryptmount is used in /etc/rc and must NOT require utilities
-# on /usr, which can be separate partition.
+# mkdtemp
+#   Create temporary directory, mimicking 'mktemp -d' but without
+#   relying on /usr/bin/mktemp, for use in early boot environments.
+#   Relies on date, $$ (process ID), and mkdir.
+# Output:
+#   The path to the created temporary directory to stdout.
 mkdtemp() {
-	# initial entropy, the more we can get the better
+	# Generate initial random seed using date, PID and seconds.
+	# The more we can get the better.
+	# XXX: is date with these arguments are POSIX compliant?
 	local random=$(( $(date +%S%M%H%j) + $$ ))
 	local tmpdir=
 
-	while
-		# C standard rand(), without truncation
-		# cf. https://en.wikipedia.org/wiki/Linear_congruential_generator
-		random=$(( (1103515245*random + 12345) % 2147483648 ))
+	# Loop until a unique directory is created.
+	while true; do
+		# Linear Conguential Generator (LCG) for pseudo-random
+		# number generation.  Based on C standard rand()
+		# algorithm (without full range truncation).
+		# Ref: https://en.wikipedia.org/wiki/Linear_congruential_generator
+		random=$(( (1103515245 * random + 12345) % 2147483648 ))
 
-		# optionally, shorten name a bit
+		# Create temporary directory using /tmp or $TMPDIR and
+		# the random number in hex.
 		tmpdir=$( printf "${TMPDIR:-/tmp}/tmp.%x" $random )
 
-		# loop until new directory is created
-		! mkdir "$tmpdir" 2>&-
-	do : ; done
+		# Attempt to create the directory, redirect error to
+		if ! mkdir "$tmpdir" 2>/dev/null; then
+			# Directory creation failed (likely already
+			# exists), loop again.
+			continue
+		fi
+
+		# Directory created successfully, break the loop.
+		break
+	done
 
 	printf %s "$tmpdir"
 }
 
 ######################################################################
-# Main functions.                                                    #
+# Section: Main functions                                            #
+# Main entry points for mapping and unmapping operations.            #
 ######################################################################
 
+# ct_main_unmap [volume_name ...]
+#   Unmap one or more encrypted volumes.
+#   If no volumes are provided, unmap all volumes listed in crypttab
+#   that are not filtered out.
 ct_main_unmap() {
 	if [ $# -eq 0 ]; then
+		# Unmap all volumes from crypttab
 		ct_read_crypttab ct_unmap
 	else
+		# Unmap specified volumes
 		local vol ret=0
 		for vol in "$@"; do
+			# Unmap each volume, track failures
 			ct_unmap "$vol" || ret=$(( ret + 1 ))
 		done
+
+		# Return the number of failed unmappings
 		return $ret
 	fi
 }
 
+# ct_main_map [volume_name | volume_name device key [options]]
+#   Map one or more encrypted volumes.
+#   - With no arguments, map all volumes from crypttab (excluding
+#   noauto).
+#   - With one argument (volume_name), map the volume from crypttab
+#   matching the name.
+#   - With 2-4 arguments (name device key [options]), map a volume
+#   using the provided parameters, overriding crypttab.
 ct_main_map() {
 	if [ $# -eq 0 ]; then
+		# Map all volumes from crypttab
 		ct_read_crypttab ct_map
 	elif [ $# -eq 1 ]; then
+		# Map a specific volume by name from crypttab
 		local vol _tmp="$1"
 
+		# Helper function to find a volume in crypttab by name
 		find_func() {
+			# Check if the first or second column (name or
+			# device) matches the target name
 			if [ "$1" = "$_tmp" ] || [ "$2" = "$_tmp" ]; then
+				# Output the whole line if found
 				printf "%s" "$*"
 			else
-				false
+				false # Indicate not found
 			fi
 		}
 
+		# Read crypttab, search for the volume using find_func
 		if vol="$(ct_read_crypttab -1 find_func)"; then
-			ct_map $vol
+			ct_map $vol # map the found volume
 		else
 			error "Unable to find '$_tmp' in '$CRYPTTAB'"
 			false
 		fi
 	elif [ $# -le 3 ]; then
+		# Map volume using command line arguments: name device
+		# key [options]
 		ct_map "$@"
 	else
 		error "Too many options given for -M"
@@ -131,9 +211,21 @@ ct_main_map() {
 }
 
 ######################################################################
-# Functions for iterating over crypttab.                             #
+# Section: Crypttab iterations functions                             #
+# Functions to read and iterate through the /etc/crypttab file.      #
 ######################################################################
 
+# ct_read_crypttab [(-1 find_func) | func]
+#   Read the crypttab file and iterate over its entries, calling the
+#   specified function.
+#   - If the first argument is "-1" followed by a function name,
+#     behave in 'adhoc' mode:
+#       iterate until the function returns true for any entry, the stop
+#       and return that entry.
+#     Used for finding a specific entry.
+#   - Otherwise, iterate over all entries and call the function for
+#     each entry.
+#   Arguments passed to the function: name, device, key, options.
 ct_read_crypttab() {
 	if [ ! -f "$CRYPTTAB" ] || [ ! -r "$CRYPTTAB" ]; then
 		error "cannot read $CRYPTTAB"
@@ -142,23 +234,30 @@ ct_read_crypttab() {
 
 	local func="$@" line lineno=0 name dev key options ret=0 adhoc=0
 
+	# Handle adhoc mode for finding a specific entry (-1
+	# find_func)
 	if [ "$1" = "-1" ]; then
-		adhoc=1
-		shift
-		func="$@"
+		adhoc=1   # Set adhoc flag
+		shift     # Remove "-1" from arguments
+		func="$@" # Remaining arguments are the function to call
+	else
+		func="$1" # First argument is the function to call
 	fi
 
+	# Open crypttab file descriptor 3 for reading.
 	while read -r name dev key options <&3; do
 		lineno=$(( lineno + 1 ))
 
-		# skip comments and empty lines
+		# Skip comments (lines starting with #) and empty lines
 		case $name in \#* | "" ) continue ;; esac
 
-		# unescape devname and keyname
+		# Unescape backslash escapes in name, device and key
+		# fields
 		name=$(printf '%b' "$name")
 		dev=$(printf '%b' "$dev")
 		key=$(printf '%b' "$key")
 
+		# Validate naem and device fields
 		if [ -z "$name" ]; then
 			warn "$CRYPTTAB:$lineno: the name (first column) cannot be blank"
 			continue
@@ -167,90 +266,157 @@ ct_read_crypttab() {
 			continue
 		fi
 
+		# Handle special key types and deprecated keywords
 		case $key in
 		- | none | "")
+			# Placeholder for password prompt
 			key=-
 			;;
 		/dev/random | /dev/urandom | /dev/hw_random)
+			# Add %random option for random key sources
 			options="$options,%random"
 			;;
 		ASK)
+			# Treat ASK as password prompt
 			info "$CRYPTTAB:$lineno: ASK is a deprecated key, please use '-' or 'none'"
 			key=-
 			;;
 		SWAP)
 			info "$CRYPTTAB:$lineno: SWAP is a deprecated key, please use '/dev/urandom' and the 'swap' option"
+			# Use urandom for swap keys
 			key="/dev/urandom"
+			# Add swap and %random options
 			options="$options,swap,%random"
 			;;
 		/* | UUID=* | PARTUUID=* | LABEL=*)
+			# Path-based keys and device
+			# UUID/PARTUUID/LABEL are allowed (no action
+			# needed here)
 			:
 			;;
 		*)
+			# Fallback to password prompt for unsupported
+			# keys
 			warn "$CRYPTTAB:$lineno: plain text keys are not supported"
 			key=-
 			;;
 		esac
 
+		# Apply filter if ct_check_filter returns true (volume
+		# is not filtered out)
 		if ct_check_filter $options; then
+			# Call the function for this crypttab entry
 			if ! $func "$name" "$dev" "$key" $options; then
+				# Increment return counter if function
+				# fails
 				ret=$(( ret + 1 ))
 			elif [ $adhoc -eq 1 ]; then
+				# Reset return code in adhoc mode if
+				# function succeeds (found entry)
 				ret=0
+				# Exit loop in adhoc mode after
+				# finding an entry
 				break
 			fi
 		fi
 
-	done 3< "$CRYPTTAB"
+	done 3< "$CRYPTTAB" # Open crypttab as file descriptor 3 for reading
 
+	# Return accumulated error count (or 0 if adhoc mode found an
+	# entry)
 	return $ret
 }
 
+# ct_check_filter options_string
+#   Check if the given options_string is allowed by the FILTER
+#   variable.
+#   FILTER is a comma-separated list of options.
+#   - Options in FILTER are allowed.
+#   - Options starting with '!' are disallowed.
+#   - If FILTER is empty, all options are allowed.
 ct_check_filter() {
 	local IFS fltr opt
+
+	# Set IFS to comma for splitting FILTER
 	IFS="$(printf ',')"
 
+	# Iterate through each filter in FILTER
 	for fltr in $FILTER; do
+		# Trim whitespace from the filter
 		fltr="$(trim "$fltr")"
 
 		case $fltr in
 		"")
+			# Skip empty filters
 			continue
 			;;
 		\!*)
+			# Filter starts with '!', indicating
+			# disallowed option.
+
+			# Check against each option passed to
+			# ct_check_filter
 			for opt in $*; do
+				# Trim whitespace from the option
 				opt="$(trim "$opt")"
+
+				# Skip empty options
 				[ -z "$opt" ] && continue
 
+				# Check if filter matches the option
+				# or option key (before '=')
 				if [ "$fltr" = "!$opt" ] || [ "$fltr" = "!${opt%%=*}" ]; then
+					# Option is explicitly
+					# disallowed by '!' filter
 					return 1
 				fi
 			done
 			;;
 		*)
+			# Regular filter (allowed option)
+
+			# Check against each option passed to
+			# ct_check_filter
 			for opt in $*; do
+				# Trim whitespace from the option
 				opt="$(trim "$opt")"
+
+				# Skip empty options
 				[ -z "$opt" ] && continue
 
+				# Check if filter matches the option
+				# or option key (before '=')
 				if [ "$fltr" = "$opt" ] || [ "$fltr" = "${opt%%=*}" ]; then
+					# Option is allowed, continue
+					# to next filter (or return 0
+					# if no more filters)
 					continue 2
 				fi
 			done
+
+			# Option is not explicitly allowed by any
+			# regular filter
 			return 1
 			;;
 		esac
 	done
 
+	# No filters disallowed the option, and no filters required it
+	# explicitly (or all required filters were met)
 	return 0
 }
 
 ######################################################################
-#  Mapping, unmapping, finding stuff.                                #
+# Section: Mapping, unmapping, finding                               #
+# Functions for core cryptsetup operations and related tasks.        #
 ######################################################################
 
+# ct_unmap volume_name
+#   Unmap an encrypted volume with the given name using cryptsetup to
+#   remove.
+# Args:
+#   $1: volume name
 ct_unmap() {
-	# name: $1
-
 	if [ ! -e "/dev/mapper/$1" ]; then
 		warn "Volume was not mapped (no '/dev/mapper/$1')"
 	elif run cryptsetup remove "$1"; then
@@ -261,267 +427,391 @@ ct_unmap() {
 	fi
 }
 
+# ct_map volume_name device key [options ...]
+#   Map an encrypted volume using cryptsetup luksOpen or cryptsetup
+#   create, depending on the volume type (LUKS or plain).
+#   Handle keyfile and tmpfs options.
 ct_map() {
+	# Initialize local variables
 	local name="$1" dev="$2" key="$3" args="" tmpfs
+
+	# Key-related variables
 	local key_dev="" key_fstype="" key_mntpnt="" key_dev_umount=0
+
+	# Remove name, dev, key from arguments, leaving options
 	shift 3
 
 	if [ -e "/dev/mapper/$name" ]; then
 		error "Volume is already mapped ('/dev/mapper/$name' exists')"
+
+		# Volume already exists, cannot map again
 		return 1
 	fi
 
-	# this function sets the args and tmpfs variables
+	# Parse the options provided to ct_map (remaining arguments);
+	# This function sets the args and tmpfs variables
 	if ! ct_parse_options "$@"; then
 		error "Unable to parse options"
 		return 1
 	fi
 	args="$args $OPTIONS"
 
-	# resolve the encrypted device, can't do much without this
+	# Resolve the encrypted device path (e.g., UUID=... to
+	# /dev/sdX)
 	if ! dev="$(ct_resolve_device "$dev")"; then
 		error "device '$dev' not found"
-		return 1
+		return 1 # encrypted device not found
 	fi
 
 	# parse various key formats
+	# Handle different key specifications: <keyfile>,
+	# <keydev>:<keyfile>, <keydev>:<offset>:<length>
 	case "$key" in
 	*:*:*)
-		key_dev="${key%%:*}"
-		key="${key#*:}"
-		key_fstype="${key%%:*}"
-		key="${key#*:}"
+		# Format: <key_dev>:<offset>:<length> (deprecated)
+		key_dev="${key%%:*}"     # Extract key device
+		key="${key#*:}"          # Remove key device part
+		key_fstype="${key%%:*}"  # Extract offset (misleading
+		                         # variable name, it's offset
+		                         # for deprecated format)
+		key="${key#*:}"          # Extract length (also misleading)
 		case "$key_fstype" in
 		*[!0-9]*)
+			# Offset is not numeric, assume it's fstype in <dev>:<fstype>:<keyfile> format
 			: ;;
 		*)
+			# # Offset is numeric, treat as deprecated <dev>:<offset>:<length>
 			warn "<dev>:<offset>:<length> is a deprecated key format. Please use"
 			warn " the keyfile-offset and keyfile-size options instead. This"
 			warn " format will *soon* be removed from cryptmount/crypttab!"
+			# Construct cryptsetup options for offset and size
 			opts="$opts --keyfile-offset=$key_fstype --keyfile-size=$key"
+			# Key path is now the key device
 			key="$key_dev"
+			# Clear temporary key format variables
 			unset key_fstype key_dev
+			;;
 		esac
 		;;
 	*:*)
+		# Format: <key_dev>:<keyfile>
+
+		# Extract key device
 		key_dev="${key%%:*}"
+		# Extract key file path relative to key device mount point
 		key="${key#*:}"
 		;;
 	"" | -)
-		unset key_dev key
+		# Empty key or "-" indicates password prompt
+		unset key_dev key # no key device or key file
 		;;
 	*)
-		unset key_dev
+		# Regular key file path
+		unset key_dev # no separate key device
 		;;
 	esac
 
-	# resolve any needed key device and mount if necessary
+	# Handle key device: resolve device path and mount if needed
 	if [ "$key_dev" ]; then
 
+		# Resolve key device path
 		if key_dev="$(ct_resolve_device "$key_dev")"; then
 
+			# Check is key device is already mounted
 			if key_mntpnt="$(get_mount "$key_dev")"; then
 
+				# Key path is relative to the existing
+				# mount point
 				key="$key_mntpnt/$key"
 
+			# Create a temporary mount point
 			elif key_mntpnt="$(mkdtemp)"; then
 
+				# Set fstype for mount if specified
 				[ -n "$key_fstype" ] && key_fstype="-t $key_fstype"
 
-				# Intentional word splitting for $key_fstype.
+				# Mount the key device read-only to
+				# the temporary mount point.
+				# Intentional word splitting for $key_fstype (for mount -t option)
 				# shellcheck disable=2086
 				if run mount -r $key_fstype "$key_dev" "$key_mntpnt"; then
+					# Key path is now under the
+					# temporary mount point
 					key="$key_mntpnt/$key"
+					# Mark key device for
+					# unmounting later
 					key_dev_umount=1
 				else
+					# Fallback to password prompt
+					# if mount fails
 					error "unable to mount key device '$key_dev',"
 					error " falling back on interactive password"
 					unset key
 				fi
 			else
+				# Fallback if temporary mountpoint
+				# creation fails
 				error "unable to find or create mountpoint for key device,"
 				error " falling back on interactive password"
 				unset key
 			fi
 		else
+			# Fallback if key device path resolution fails
 			error "key device '$key_dev' not found"
 			error " falling back on interactive password"
 			unset key
 		fi
 
+	# Key path is specified, resolve it
 	elif [ -n "$key" ] && [ "$key" != "-" ]; then
 		if ! key="$(ct_resolve_device "$key")"; then
+			# Fallback if key file path resolution fails
 			error "key '$key' not found, falling back on interactive password"
 			unset key
 		fi
 	fi
 
+	# Construct --key-file option for cryptsetup
 	[ "$key" ] && key=--key-file="$key"
 
+	# initialize return code
 	local ret=0
 
+	# Main cryptsetup operation: luksOpen for LUKS, create for
+	# plain;
 	# the main event, run cryptsetup (and mkswap, mkfs if necessary)
+
+	#  Check if device is LUKS
 	if cryptsetup isLuks "$dev"; then
 		info "device '$dev' detected as LUKS"
 
+		# Open LUKS volume
 		if run cryptsetup luksOpen $key $args "$dev" "$name"; then
 			info "successfully mapped '$dev' to '/dev/mapper/$name'"
 		else
 			error "unable to map '$dev' to '/dev/mapper/$name'"
-			ret=1
+			ret=1 # Indicate mapping failure
 		fi
+	
+	# Assume plain volume
 	else
 		info "device '$dev' assumed to be plain"
 
+		# Prevent accidental 'cryptsetup create' on devices that might contain data;
 		# cryptsetup 'create' can be destructive, don't do it if blkid can
 		# identify the device type
 		if [ $FORCE -ne 1 ] && blkid -p "$dev" >/dev/null 2>&1; then
 			error "Refusing to call 'cryptsetup create' on device that might"
 			error " have data. If you are sure this is what you want, use"
 			error " the -f option"
-			ret=1
+			ret=1 # Refuse to create if data is detected and force is not used
 
+		# Create plain volume
 		elif run cryptsetup create $key $args "$name" "$dev"; then
 			info "successfully mapped '$dev' to '/dev/mapper/$name'"
 
+			# Format as swap if 'swap' tmpfs option is set
 			if [ "$tmpfs" = "swap" ]; then
 				if run mkswap -f -L "$name" "/dev/mapper/$name"; then
 					info "mkswap successful on '/dev/mapper/$name'"
 				else
 					error "mkswap failed for '/dev/mapper/$name'"
-					ret=1
+					ret=1 # Indicate mkswap failure
 				fi
+
+			# Format as filesystem if tmpfs option is set (not swap)
 			elif [ "$tmpfs" ]; then
 				if run mkfs -t "$tmpfs" "/dev/mapper/$name"; then
 					info "mkfs successful on '/dev/mapper/$name'"
 				else
 					error "mkfs failed for '/dev/mapper/$name'"
-					ret=1
+					ret=1 # Indicate mkfs failure
 				fi
 			fi
 		else
 			error "unable to map '$dev' to '/dev/maper/name/$name'"
-			ret=1
+			ret=1 # Indicate mapping failure
 		fi
 	fi
 
+	# Cleanup: unmount key device if it was temporarily mounted
 	# clean up after ourselves
 	if [ $key_dev_umount -eq 1 ]; then
 		if ! run umount "$key_dev"; then
 			warn "unable to mount key device '$key_dev'"
 		else
+			# Remove temporary mount point directory
 			run rmdir "$key_mntpnt"
 		fi
 	fi
 
+	# Return the result of mapping operation (0 for success, 1 for failure)
 	return $ret
 }
 
+# ct_resolve_device device_spec
+#   Resolve a device specification (path, UUID, PARTUUID, LABEL) to a
+#   device path.
+#   Handle device discovery and wait if udev is running.
 ct_resolve_device() {
 	local tmp="" device="$1" seconds="$WAITTIME" tag tagval
 
+	# # Handle UUID, PARTUUID, LABEL device specifications using blkid
 	case "$device" in
 	UUID=* | PARTUUID=* | LABEL=*)
+		# Get device path from blkid
 		tmp="$(blkid -l -o device -t "$device")"
 		if [ -z "$tmp" ]; then
+			# blkid failed to find the device
+
 			if [ $UDEVRUNNING -eq 1 ]; then
+				# if udev is running, construct path based on udev symlinks
+
+				# extract tag (UUID, PARTUUID, LABEL)
+				# and lowercase it
 				tag="$(echo "${device%%=*}" | sed 's/./\L&/g')"
+
+				# extract tag value
 				tagval="${device#*=}"
+
+				# construct udev symlink path
 				device="/dev/disk/by-$tag/$tagval"
 			fi
 		else
+			# Device found by blkid, use the path from blkid
 			device="$tmp"
 		fi
 	esac
 
+	# Wait for device to appear if it's a /dev/* path and udev is running
 	if [ ! -e "$device" ] \
 	&& case $device in /dev/*) true ;; *) false ;; esac \
 	&& [ "$UDEVRUNNING" -eq 1 ]; then
 		msg "Waiting $seconds seconds for '$device'..."
 
+		# Wait until device exists or timeout
 		until [ -e "$device" ] || [ "$seconds" -eq 0 ]; do
 			sleep 1
 			seconds=$(( seconds - 1 ))
 		done
 	fi
 
+	# output the resolved device path
 	printf "%s" "$device"
 
 	if [ -e "$device" ]; then
 		info "resolve: found '$device'"
 	else
 		error "resolve: unable to find '$device'"
-		return 1
+		return 1 # Indicate resolution failure
 	fi
 }
 
+# ct_parse_options options_string
+#   Parse a comma-separated options string for cryptsetup.
+#   Handles deprecated option format (leading dashes), and sets the global OPTIONS variable.
+#   Also handles 'tmpfs' and 'swap' options by setting the global 'tmpfs' variable.
 ct_parse_options() {
+	# initialize local variables
 	local IFS=',' optlst="$*" opt key val depr=0
 
+	# local variable to accumulate cryptsetup arguments
+	#local args=''
+
+	# Split the options string by commas into optlst array
 	for opt in $optlst; do
 
-		# separate key and value
+		# separate key and value for options of the form
+		# key=value
 		unset key val
 		case "$opt" in
 		"")
+			# skip empty options
 			continue
 			;;
 		-*)
+			# Option starts with '-', deprecated format (pass directly to cryptsetup)
+
+			# Warn only once about deprecated format
 			if [ $depr -eq 0 ]; then
 				info "You are using a deprecated format for the options field. The entire"
 				info " field will be passed directly to cryptsetup. Please use the more"
 				info " standardized comma-deliminated options list instead. This format"
 				info " will be removed in a future version of cryptmount/crypttab!"
-				depr=1
+				depr=1 # set deprecated flag to avoid repeated warnings
 			fi
 			args="$args $opt"
 			continue
 			;;
 		*=*)
+			# option in the form key=value
+			# extract key (part before '=')
 			key="${opt%%=*}"
+			# extract value (part after '=')
 			val="${opt#*=}"
+			# handle cases like 'option=' value is empty)
 			if [ "$key" = "$val" ]; then
+				# unset val if key and val are the
+				# same (no value given)
 				unset val
 			fi
 			;;
 		*)
-			key="$opt"
+			# option without '=' (key only)
+			key="$opt" # key is the entire option string
 			;;
 		esac
 
+		# Handle specific options and construct cryptsetup arguments
 		case "$key" in
 		swap)
+			# Set global tmpfs variable to "swap" for
+			# mkswap;
 			# set external variable
 			tmpfs="swap"
 			;;
 		luks | plain)
+			# LUKS/plain is auto-detected, ignore option
 			warn "Ignoring option $key, LUKS volumes are automatically detected"
 			;;
 		noauto | %*)
+			# noauto and %-prefixed options are handled elsewhere (ignored here)
 			:
 			;;
 		skip | precheck | check | checkargs | noearly | loud | keyscript)
+			# Debian specific options, ignore them
 			warn "Ignoring Debian specific option '$key'"
 			;;
 		tmp)
-			# set an external variable
+			# tmp filesystem type option
+			# Default tmpfs to ext4 if no value is given
 			if [ -z "$val" ]; then
 				msg "Defaulting tmp to ext4"
 			fi
 			tmpfs="${val:-ext4}"
 			;;
 		size)
+			# --key-size option for cryptsetup
 			args="$args --key-size $val"
 			;;
 		device-size)
+			# --size option for cryptsetup (device size, renamed to size later)
 			args="$args --size $val"
 			;;
 		none)
+			# No extra args (explicitly clear args,
+			# effectively ignoring other options in this
+			# context)
 			args=
 			;;
 		*)
+			# Generic options, pass them to cryptsetup as --key value or -k value
+
+			# Single character option, use short option form (-k val)
 			if [ ${#key} -eq 1 ]; then
 				args="$args -$key $val"
+
+			# Multi-character option, use long option form (--key val)
 			else
 				args="$args --$key $val"
 			fi
@@ -533,9 +823,13 @@ ct_parse_options() {
 }
 
 ######################################################################
-# Command-line helpers.                                              #
+# Section: Command-line helpers                                      #
+# Functions for handling command-line arguments and help/version     #
+# output.                                                            #
 ######################################################################
 
+# print_help
+#   Print the usage help message to stdout.
 print_help() {
 	cat <<EOF
 Usage: cryptmount [-Vfhnvq] [-c crypttab] [-w num] [-o options] [-O filters]
@@ -573,112 +867,149 @@ Options:
 EOF
 }
 
+# print_version
+#   Print the program version to stdout.
 print_version() {
-	echo "cryptmount @VERSION@"
+	echo "cryptmount @VERSION@" # Placeholder for program version.
 }
 
+# ct_main [arguments ...]
+#   Main function to parse command line options and dispatch actions.
 ct_main() {
+	# Variable to store the selected action (list, map, unmap)
 	local action
 
+	# set_action action_name
+	#   Helper function to set the 'action' variable.
+	#   Ensures only one action (-L, -M, -U) is specified.
 	set_action() {
 		if [ -z $action ]; then
-			action="$@"
+			action="$@" # set action if not already set
 		else
 			error "only one of -L, -M, or -U may be given"
 			print_help
-			exit 1
+			exit 1 # exit if multiple actions are given
 		fi
 	}
 
+	# Process command-line options using getopts (POSIX built-in)
+	# Note: getopt(1) external utility is avoided for boot environment compatibility.
+	# ;;;
 	# Don't use getopt(1) instead of builtin "getopts" since the
 	# getopt(1) utility is placed into /usr/bin and cryptmount(8)
 	# may be placed to /sbin.  Consequently that will break a
 	# "separate /usr" boot.
 	while getopts ":$SHORTOPTS" opt; do
 		case $opt in
-		L) set_action list ;;
-		M) set_action map ;;
-		U) set_action unmap ;;
-		c) CRYPTTAB="$OPTARG" ;;
-		f) FORCE=1 ;;
-		w) WAITTIME=$(printf '%s\n', "$OPTARG" | sed 's/[^0-9]//g') ;;
-		n) DRYRUN=1 ;;
-		q) VERBOSE=$(( VERBOSE - 1 )) ;;
-		v) VERBOSE=$(( VERBOSE + 1 )) ;;
-		o) OPTIONS="$OPTIONS,$OPTARG" ;;
-		O) FILTER="$FILTER,$OPTARG" ;;
-		V) print_version ; exit 0 ;;
-		h) print_help    ; exit 0 ;;
+		L) set_action list ;;   # -L: list action
+		M) set_action map ;;    # -M: map action
+		U) set_action unmap ;;  # -U: unmap action
+		c) CRYPTTAB="$OPTARG" ;; # -c file: set crypttab file
+		f) FORCE=1 ;; # -f: force destructive operations
+		w) WAITTIME=$(printf '%s\n', "$OPTARG" | sed 's/[^0-9]//g') ;; # -w num: set wait time (remove non-digits)
+		n) DRYRUN=1 ;; # -n: dry run mode
+		q) VERBOSE=$(( VERBOSE - 1 )) ;; # -q: decrease verbosity
+		v) VERBOSE=$(( VERBOSE + 1 )) ;; # -v: increase verbosity
+		o) OPTIONS="$OPTIONS,$OPTARG" ;; # -o options: append options string
+		O) FILTER="$FILTER,$OPTARG" ;; # -O filters: append filter string
+		V) print_version ; exit 0 ;; # -V: print version and exit
+		h) print_help    ; exit 0 ;; # -h: print help and exit
 		:)
+			# Option requiring argument is missing argument
 			error "option requires an argument -- '$OPTARG'"
 			print_help
 			exit 1
 			;;
 		?)
+			# Invalid option
 			error "invalid option -- '$OPTARG'"
 			print_help
 			exit 1
 			;;
 		esac
 	done
+	# Shift positional parameters to remove processed options
 	shift $(( OPTIND - 1 ))
 
+	# Check if udevd is running to enable device waiting if necessary.
 	# Check for UDEV
 	if pidof udevd >/dev/null 2>&1; then
+		# Set UDEVRUNNING flag if udevd is detected
 		UDEVRUNNING=1
 		info "Detected udevd"
 	else
 		info "udevd not running, or unable to detect it: waiting for devices disabled"
 	fi
 
-	# Pre-parse OPTIONS, a little ugly, but it works
+	# Pre-parse OPTIONS string to convert deprecated format and set global OPTIONS
 	preparse() {
+		# Local variables for preparse function
 		local args tmpfs
+
+		# Parse the OPTIONS string
 		if ! ct_parse_options $OPTIONS; then
 			error "Invalid options string: $OPTIONS"
-			exit 1
+			exit 1 # exit if options parsing fails
 		fi
+		# Update global OPTIONS with parsed arguments
 		OPTIONS="$args"
 	}
 	preparse
 
+	# Dispatch to the appropriate action based on command-line options
 	if [ -z "$action" ] || [ "$action" = "list" ]; then
-
+		# Default action is list (-L or no action given)
 		if [ $# -ne 0 ]; then
+			# Warn if volume names are given with -L
 			warn "With -L, volumes given on the command line have no effect"
 		fi
 
+		# Simple function to print volume names
 		list_func() { printf "%s\n" "$1"; }
+
+		# Read crypttab and call list_func for each entry (filtered)
 		ct_read_crypttab list_func
 
+	# Unmap action (-U)
 	elif [ "$action" = "unmap" ]; then
 
 		if [ $# -gt 0 ]; then
 			if [ "$FILTER" != "!noauto" ]; then
+				# Inform user that filters are ignored when volume names are given
 				info "Filters from -O are ignored in this mode"
 			fi
+			# Unset FILTER to unmap specified volumes regardless of filter
 			unset FILTER
 		fi
 
+		# Call ct_main_unmap to unmap volumes
 		ct_main_unmap "$@"
 
+	# Map action (-M)
 	elif [ "$action" = "map" ]; then
 
 		if [ $# -ne 0 ]; then
 			if [ "$FILTER" != "!noauto" ]; then
+				# Inform user that filters are ignored when volume names are given
 				info "Filters from -O are ignored in this mode"
 			fi
+			# Unset FILTER to map specified volumes regardless of filter
 			unset FILTER
 		fi
 
+		# Call ct_main_map to map volumes
 		ct_main_map "$@"
 
 	else
+		# Internal error: no action set
 		error "Internal error: no action"
 		false
 	fi
 }
 
+######################################################################
+# Section: Global variables                                          #
+# Global variable definitions and initializations.                   #
 ######################################################################
 
 # Globals.
@@ -693,7 +1024,11 @@ FILTER="!noauto"
 FORCE=0
 
 ######################################################################
+# Section: Script execution                                          #
+# Invoke the main function with command-line arguments.              #
+######################################################################
 
+# Execute the main function, passing command line arguments
 ct_main "$@"
 
 # vim: ft=sh cc=72 tw=70
