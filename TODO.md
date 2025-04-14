@@ -4,13 +4,14 @@ TODO cryptmount
 
 No milestone
 ------------
-  - [ ] add bash-completion:
-        https://github.com/zeppe-lin/cryptmount/issues/4
 
-  - [ ] code refactoring:
-        https://github.com/zeppe-lin/cryptmount/issues/3
+- [ ] Add bash-completion:
+  https://github.com/zeppe-lin/cryptmount/issues/4
 
-  - [ ] fix shellcheck warnings and add checking to GitHub Actions:
-        https://github.com/zeppe-lin/cryptmount/issues/1
+- [ ] Code refactoring:
+  https://github.com/zeppe-lin/cryptmount/issues/3
 
-  - [ ] crypttab's syntax file for vim?
+- [ ] Fix shellcheck warnings and add checking to GitHub Actions:
+  https://github.com/zeppe-lin/cryptmount/issues/1
+
+- [ ] Vim syntax file for crypttab?
