@@ -10,11 +10,10 @@ is a patched version of Matthew's Monaco cryptmount.
 
 This distribution have the following little differences:
   * add LICENSE file (taken from Matthew's initial Arch package)
-  * manual pages in mdoc(7) format
   * GNU-style help/usage (-[hV] options)
   * no awk(1) dependency
   * findmnt(8) is mandatory
-  * use `TMPDIR` as work directory and fallback to `/tmp` if unset
+  * use TMPDIR as work directory and fallback to /tmp if unset
   * POSIX Makefile
   * various minor changes and cleanups (however, refactoring is still
     WIP)
@@ -32,6 +31,7 @@ REQUIREMENTS
 Build time
 ----------
   * POSIX sh(1p), make(1p) and "mandatory utilities"
+  * scdoc(1) to build manual pages
 
 Runtime
 -------
@@ -45,20 +45,17 @@ Runtime
 INSTALL
 =======
 
-The shell command `make install` should install this package.
+To install this package, run:
 
-See `config.mk` file for configuration parameters.
+    make install
+
+See config.mk file for configuration parameters.
 
 
 DOCUMENTATION
 =============
 
-Online documentation
---------------------
-
-Manual pages:
-- [cryptmount.8](https://zeppe-lin.github.io/cryptmount.8.html)
-- [crypttab.5](https://zeppe-lin.github.io/crypttab.5.html)
+See /man directory for manual pages.
 
 
 CREDITS
