@@ -89,7 +89,7 @@ Other options which are used by *cryptmount*(8) are:
 
 *size*=_size_
 	See *cryptsetup*(8)'s *--key-size*.  Other formats for
-	_crypttab_  use  _size_  for the amount of bytes to read from
+	_crypttab_ use _size_ for the amount of bytes to read from
 	key.
 
 *device-size*=_size_
