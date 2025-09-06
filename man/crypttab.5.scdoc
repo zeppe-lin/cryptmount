@@ -64,8 +64,7 @@ hyphen mark ('*-*') then the entire field is interpreted as a literal
 command line for *cryptsetup*(8).
 
 Most options have a one-to-one correspondence to *cryptsetup*(8)
-command-line options and are simply reformatted.  For example, to
-use
+command-line options and are simply reformatted.  For example, to use
 ```
 cryptsetup --cipher CIPHER
 ```
@@ -99,10 +98,10 @@ Other options which are used by *cryptmount*(8) are:
 *%tag*
 	Tags can be used to include or exclude a group of "volumes"
 	when running *cryptmount*(8).  Additionally, *cryptmount*
-	automatically adds to "volumes", with a key of
-	_/dev/urandom_, a *%random* tag.  This tag may be used by the
-	initscripts to delay the mapping of these volumes until after
-	the random seed has been restored during boot.
+	automatically adds to "volumes", with a key of _/dev/urandom_,
+	a *%random* tag.  This tag may be used by the initscripts to
+	delay the mapping of these volumes until after the random seed
+	has been restored during boot.
 
 # SEE ALSO
 
@@ -111,6 +110,8 @@ Other options which are used by *cryptmount*(8) are:
 
 # AUTHORS
 
-Matt Monaco <dgbaley27@0x01b.net>
+Originally written by Matt Monaco <dgbaley27@0x01b.net>.
+
+Reworked for Zeppe-Lin by Alexandr Savca <alexandr.savca89@gmail.com>.
 
 ; vim: ft=scdoc cc=72 tw=70
