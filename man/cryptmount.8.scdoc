@@ -6,14 +6,11 @@ cryptmount - parse crypttab for use by cryptsetup
 
 # SYNOPSIS
 
-*cryptmount* \
-[*-Vfhnvq*] \
-[*-c* _crypttab_] \
-[*-w* _num_] \
-[*-o* _options_] \
-[*-O* _filters_] \
-[{*-L* | *-M* [_name_ | _device_ | _name_ _device_ [_key_]] | \
-*-U* [_name_[,...]]}]
+*cryptmount* [*-Vfhnvq*] [*-c* _crypttab_] [*-w* _num_]++
+           [*-o* _options_] [*-O* _filters_]++
+           {*-L* |++
+            *-M* [_name_ | _device_ | _name_ _device_ [_key_]] | \
+            *-U* [_name-list_]}
 
 # DESCRIPTION
 
@@ -27,15 +24,18 @@ command line without _crypttab_.
 	List the _name_(s) (first column) of volumes from _crypttab_.
 	Use with *-O* to manipulate which _name_(s) are listed.
 
-*-M*
-	Perform a mapping.  The first form of this command finds a
-	volume from _crypttab_ either by its _name_ or _device_, or if
-	nothing is given then map all volumes (use with *-O* to
-	manipulate which volumes are mapped).  The second form defines
-	a volume entirely on the command line, _crypttab_ is not used.
+*-M* [_name_ | _device_ | _name_ _device_ [_key_]]
+	Perform a mapping.
+	The first form of this command finds a volume from _crypttab_
+	either by its _name_ or _device_, or if nothing is given then
+	map all volumes (use with *-O* to manipulate which volumes are
+	mapped).
+	The second form defines a volume entirely on the command line,
+	_crypttab_ is not used.
 
-*-U*
-	Unmap volume(s).  If a list of _name_(s) is given, unmap them.
+*-U* [_name-list_]
+	Unmap volume(s).
+	If a comma-separated list of _name_(s) is given, unmap them.
 	Otherwise unmap all volume(s) from _crypttab_ (with *-O* to
 	manipulate which volume(s) are unmapped).
 
@@ -46,27 +46,30 @@ command line without _crypttab_.
 	_/etc/crypttab_.
 
 *-f*
-	Force potentially destructive mappings.  For plain mappings
-	(which are used with the *swap* and *tmp* options), there is a
-	lot of potential to accidentally lose data.  Because of this,
-	*cryptmount* performs a check with *blkid*(8) to see if there
-	is anything identifiable on device.  Use *-f* to bypass this
-	check.
+	Force potentially destructive mappings.
+	For plain mappings (which are used with the *swap* and *tmp*
+	options), there is a lot of potential to accidentally lose
+	data.
+	Because of this, *cryptmount* performs a check with *blkid*(8)
+	to see if there is anything identifiable on device.
+	Use *-f* to bypass this check.
 
 *-w* _num_
 	Time (in seconds) to wait for device if it is not already
-	available.  If *udevd*(8) is not running, then *cryptmount*
-	does not bother to wait and this option is a no-op.  This
-	also affects the wait time for _keydevice_ if your key is a
-	block device or a file on a block device.
+	available.
+	If *udevd*(8) is not running, then *cryptmount* does not
+	bother to wait and this option is a no-op.
+	This also affects the wait time for _keydevice_ if your key is
+	a block device or a file on a block device.
 
 *-n*
 	Dry run, useful with *-v* to see how *cryptsetup*(8) will be
 	called.
 
 *-v*
-	Increase verbosity.  This prints the commands which are being
-	called (e.g., *cryptsetup*(8), *mkswap*(8), etc.).
+	Increase verbosity.
+	This prints the commands which are being called (e.g.,
+	*cryptsetup*(8), *mkswap*(8), etc.).
 
 *-q*
 	Decrease verbosity.
@@ -79,22 +82,24 @@ command line without _crypttab_.
 *-O* _filters_
 	Similar to _options_, this is used to manipulate which
 	volume(s) are used with *-L* and with *-M*/*-U* without
-	arguments.  If an option is present in filters, then the
-	volume in _crypttab_ must contain the option.  For example
-	*-O swap,size* matches all volume(s) with the *swap* option
-	and any *size=size* option; or *-O swap,size=512* matches only
-	those volume(s) with the *swap* option and specifically
-	*size=512*.
+	arguments.
+	If an option is present in filters, then the volume in
+	_crypttab_ must contain the option.
+	For example *-O swap,size* matches all volume(s) with the
+	*swap* option and any *size=size* option; or *-O
+	swap,size=512* matches only those volume(s) with the *swap*
+	option and specifically *size=512*.
 
 	A filter option may also be negated by prefixing it with an
-	exclamation  mark  ('*!*').  For example, *-O swap,!size*
-	includes all volume(s) with the *swap* option but without the
-	*size* option.  There is a built-in filter *!noauto*.
+	exclamation  mark  ('*!*').
+	For example, *-O swap,!size* includes all volume(s) with the
+	*swap* option but without the *size* option.
+	There is a built-in filter *!noauto*.
 
-	Filters are especially useful with *%tag* options.  For
-	example, *-O !%random* can be used to map all volumes which
-	don't use _/dev/urandom_ for a password and *-O %random* to
-	map the remainder once your system's random seed has been
+	Filters are especially useful with *%tag* options.
+	For example, *-O !%random* can be used to map all volumes
+	which don't use _/dev/urandom_ for a password and *-O %random*
+	to map the remainder once your system's random seed has been
 	restored.
 
 	*Important*:
