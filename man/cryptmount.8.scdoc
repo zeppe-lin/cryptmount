@@ -6,9 +6,9 @@ cryptmount - parse crypttab for use by cryptsetup
 
 # SYNOPSIS
 
-*cryptmount* [*-Vfhnvq*] [*-c* _crypttab_] [*-w* _num_]++
-           [*-o* _options_] [*-O* _filters_]++
-           {*-L* |++
+*cryptmount* [*-Vfhnvq*] [*-c* _crypttab_] [*-w* _num_] \
+           [*-o* _options_] [*-O* _filters_] \
+           {*-L* | \
             *-M* [_name_ | _device_ | _name_ _device_ [_key_]] | \
             *-U* [_name-list_]}
 
