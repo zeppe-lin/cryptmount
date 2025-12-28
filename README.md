@@ -71,7 +71,7 @@ Resurrection & patches:
 LICENSE
 =======
 
-`cryptmount` is licensed through the GNU General Public License v1
-<https://gnu.org/licenses/gpl.html>.
-Read the COPYING file for copying conditions.
-Read the COPYRIGHT file for copyright notices.
+`cryptmount` is licensed through the
+[GNU General Public License v1](https://gnu.org/licenses/gpl.html).
+
+See `COPYING` for license terms and `COPYRIGHT` for notices.
