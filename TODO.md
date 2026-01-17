@@ -15,3 +15,4 @@ No milestone
   https://github.com/zeppe-lin/cryptmount/issues/1
 
 - [ ] Vim syntax file for crypttab?
+  https://github.com/zeppe-lin/cryptmount/issues/5
