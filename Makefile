@@ -2,7 +2,7 @@
 
 include config.mk
 
-SUBDIRS = man src
+SUBDIRS = man src vim
 
 all install uninstall clean:
 	for subdir in $(SUBDIRS); do (cd $$subdir; $(MAKE) $@); done
