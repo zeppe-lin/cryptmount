@@ -1,62 +1,71 @@
 OVERVIEW
 ========
 
-This repository contains `cryptmount`, a tiny utility that is a
-wrapper for `cryptsetup` which makes use of a `crypttab` file.
+`cryptmount` is a small utility that wraps `cryptsetup(8)` and
+operates using a `/etc/crypttab` file.
 
-This distribution is a fork of Sabotage-Linux' `cryptmount` as of
-commit 8b7af97 (Thu Nov 19, 2020).  The Sabotage-Linux' version of
-`cryptmount` is a patched version of Matthew's Monaco `cryptmount`.
+This distribution is a fork of Sabotage‑Linux `cryptmount` at commit
+8b7af97 (Thu Nov 19, 2020).  The Sabotage‑Linux version itself is a
+patched variant of Matthew Monaco's original `cryptmount`.
 
-This distribution have the following little differences:
-  * add LICENSE file (taken from Matthew's initial Arch package)
-  * GNU-style help/usage (`-[hV]` options)
-  * no `awk(1)` dependency
-  * `findmnt(8)` is mandatory
-  * use `TMPDIR` as work directory and fallback to `/tmp` if unset
-  * POSIX Makefile
-  * various minor changes and cleanups (however, refactoring is still
-    WIP)
+The following differences are introduced:
+  * Added LICENSE file (from Matthew's initial Arch package)
+  * GNU-style help and usage (`-[hV]` options)
+  * Removed `awk(1)` dependency
+  * Mandatory use of `findmnt(8)`
+  * Work directory taken from `TMPDIR`, falling back to `/tmp` if
+    unset
+  * POSIX-compliant Makefile
+  * Vim syntax highlighting for `/etc/crypttab`
+  * Various minor changes and cleanups (refactoring still in progress)
 
-See git log for complete/further differences.
+See the git log for full history.
 
 The original sources can be downloaded from:
   1. https://github.com/sabotage-linux/cryptmount
   2. https://github.com/sabotage-linux/cryptmount/archive/8b7af97/cryptmount-8b7af97.zip
 
+---
 
 REQUIREMENTS
 ============
 
 Build time
 ----------
-  * POSIX `sh(1p)`, `make(1p)` and "mandatory utilities"
-  * `scdoc(1)` to build manual pages
+  * POSIX `sh(1p)`, `make(1p)`, and "mandatory utilities"
+  * `scdoc(1)` to generate manual pages
 
 Runtime
 -------
   * POSIX `sh(1p)` and "mandatory utilities"
-  * `findmnt(8)` from `coreutils` package
+  * `findmnt(8)` from `coreutils`
   * `cryptsetup(8)`
   * `blkid(8)`
   * `mkswap(8)`
 
+---
 
-INSTALL
-=======
+INSTALLATION
+============
 
-To install this package, run:
+To install:
 
-    make install
+```sh
+# as root
+make install
+```
 
-See `config.mk` file for configuration parameters.
+Configuration parameters are defined in `config.mk`.
 
+---
 
 DOCUMENTATION
 =============
 
-See `/man` directory for manual pages.
+Manual pages are provided in `/man` and installed under the system
+manual hierarchy.
 
+---
 
 CREDITS
 =======
@@ -64,14 +73,15 @@ CREDITS
 Original developer:
   * Matthew Monaco <matthew.monaco@0x01b.net>
 
-Resurrection & patches:
+Resurrection and patches:
   * rofl0r <retnyg@gmx.net>
 
+---
 
 LICENSE
 =======
 
-`cryptmount` is licensed through the
+`cryptmount` is licensed under the
 [GNU General Public License v1](https://gnu.org/licenses/gpl.html).
 
 See `COPYING` for license terms and `COPYRIGHT` for notices.
