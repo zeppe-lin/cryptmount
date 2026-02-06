@@ -3,20 +3,24 @@ name: Lint CI
 on:
   push:
     branches: [ "master" ]
+    paths: &paths
+      - ".github/**"
+      - "src/cryptmount.in"
+
   pull_request:
     branches: [ "master" ]
+    paths: *paths
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install lint dependencies
+    - name: Install shellcheck
       run: sudo apt-get install -y shellcheck
 
-    - name: Check src scripts for errors
+    - name: Run shellcheck
       run: cd src && shellcheck -s sh cryptmount.in
 
-# End of file.
